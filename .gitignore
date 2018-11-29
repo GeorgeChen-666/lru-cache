@@ -1,4 +1,6 @@
 /build
+/coverage
 /node_modules
 /.idea
 lint-report.html
+test-report.html
