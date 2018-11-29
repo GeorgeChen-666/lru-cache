@@ -62,6 +62,21 @@ describe("LruCache", () => {
 
     cache1.clear();
   });
+
+  it("should provide a 'setAll' method that supports alternateKeys alternate key", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    cache1.setAll({
+      key: "key1",
+      value: "value1 of type 1",
+      alternateKeys: ["myAltKey1", "myAltKey2"],
+    });
+    expect(cache1.get("myAltKey1")).toEqual("value1 of type 1");
+    expect(cache1.get("myAltKey2")).toEqual("value1 of type 1");
+    expect(typeof cache1.get("myAltKey3")).toEqual("undefined");
+
+    cache1.clear();
+  });
 });
 
 

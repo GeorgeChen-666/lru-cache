@@ -5,6 +5,7 @@ const DEFAULT_MAX_SIZE = 500;
 let nextHandlerKey = 0;
 const keyToChangedHandler = new Map();
 
+
 /**
  * Register a handler that is called when value(s) get updated/inserted/removed in/to/from a cache.
  * If the cache has already exceeded its maxSize, there is no way to know if a cache.set (or setAll) is an insert or
@@ -46,6 +47,7 @@ export const registerCacheChangedHandler = (changedHandler, valueTypes = null) =
   keyToChangedHandler.set(key, handler);
   return handler;
 };
+
 
 const handleTransactionChangeObject = changeObject => {
   const errors = [];
@@ -119,9 +121,13 @@ const cacheTransactionRecursive = callbackOrPromise => {
   }
 };
 
+
 /** Pass a callback or a promise. All cache changes happening inside the callback or promise will be batched into a single
  *  change object that will be dispatched to handlers after the callback/promise has finished. If this is called while there
- *  is already another transaction in progress, the two transactions will just be batched together.*/
+ *  is already another transaction in progress, the two transactions will just be batched together.
+ * @param {function | Promise} callbackOrPromise - callback or promise to be executed within the transaction
+ * @return {undefined} void
+ */
 export const cacheTransaction = callbackOrPromise => {
   if (transactionChangeObject !== null) {
     // There is already a transaction in progress, so we will just batch this one together with the one being in progress:
@@ -133,6 +139,7 @@ export const cacheTransaction = callbackOrPromise => {
   };
   cacheTransactionRecursive(callbackOrPromise);
 };
+
 
 const handleChange = (valueType, keyValueAlternateKeysIsLruRemove, fieldNameAdd, fieldNameUnchanged) => {
   let changeObject = transactionChangeObject;
@@ -237,17 +244,25 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   const lruMap = LruMap(maxSize);
   const alternateKeyToKey = new Map();
 
-  /** */
+  /** Insert or update multiple cache entries.
+   *  If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
+   *  A corresponding cache changed event will be dispatched.
+   *  If an inserts lead to cache max size being exceeded, the changed event will contain both, inserts and removes.
+   * @param {object} - object with 'keyValueArray' and optional 'keyToAlternateKeys'
+   * @return {undefined} void
+   */
   self.setAll = ({keyValueArray, keyToAlternateKeys = null}) => {
     setAll(valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys);
   };
 
-  /** */
+  /** Like 'setAll', but returning a Promise that is executed in another event loop */
   self.setAllAsync = asyncWrap(self.setAll);
 
   /** Insert or update a cache entry.
    *  If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
-   * @param {object} - object with 'key' and 'value' an optional 'alternateKeys'
+   *  A corresponding cache changed event will be dispatched.
+   *  If an insert leads to cache max size being exceeded, the cached change event will contain both, insert and remove
+   * @param {object} - object with 'key' and 'value' and optional 'alternateKeys'
    * @return {undefined} void
    */
   self.set = ({key, value, alternateKeys = null}) => {
@@ -266,10 +281,15 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     }
   };
 
-  /** */
+  /** Like 'set', but returning a Promise that is executed in another event loop */
   self.setAsync = asyncWrap(self.set);
 
-  /** */
+  /** Get value from cache by either its key or one of its alternate keys (if exists)
+   *  Returns undefined, if not in cache.
+   *  Makes the corresponding entry the last recently used (use 'getWithoutLruChange' to avoid this).
+   * @param {string} keyOrAlternateKey - The key or alternate key of the value
+   * @return {object | undefined} object, if the key is in cache, else undefined
+   */
   self.get = keyOrAlternateKey => {
     let entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);
     if (typeof entry === "undefined") {
@@ -279,7 +299,10 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     return entry.value;
   };
 
-  /** */
+  /** Like 'get', but not making the corresponding entry the last recently used
+   * @param {string} keyOrAlternateKey - The key or alternate key of the value
+   * @return {object | undefined} object, if the key is in cache, else undefined
+   */
   self.getWithoutLruChange = keyOrAlternateKey => {
     let entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);
     if (typeof entry === "undefined") {
@@ -288,7 +311,11 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     return entry.value;
   };
 
-  /** */
+  /** Delete entry from cache by key or alternate key.
+   *  A corresponding cache changed event will be dispatched.
+   *  @param {string} keyOrAlternateKey - The key or alternate key of the to be deleted value
+   *  @return {boolean} true, if the key was in the cache.
+   */
   self.delete = keyOrAlternateKey => {
     const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);
     if (typeof entry === "undefined") {
@@ -302,13 +329,20 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     return true;
   };
 
-  /** */
+  /** Iterate over the cache from oldest to newest entry
+   *  The given callback gets a cache entry as argument (an object with 'key', 'value' and 'alternateKeys')
+   */
   self.forEach = lruMap.forEach;
 
-  /** */
+  /** Get an Array with all cache entries
+   * @return {Array} cache entries (objects with 'key', 'value' and 'alternateKeys')
+   */
   self.getEntries = () => lruMap.map(entry => entry);
 
-  /** */
+  /** Clear the cache
+   *  A corresponding cache changed event will be dispatched.
+   * @return {undefined} void
+   */
   self.clear = () => {
     const keyValueArray = lruMap.clear();
     alternateKeyToKey.clear();
@@ -319,16 +353,22 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     });
   };
 
-  /** */
+  /** Get the number of currently cached objcets */
   self.getSize = lruMap.getSize();
 
-  /** */
+  /** Get the value type of this cache
+   * @return {string} the value type
+   */
   self.getValueType = () => valueType;
 
   /** */
   self.getMaxSize = lruMap.getMaxSize();
 
-  /** */
+  /** Set a new max size for this cache.
+   *  If this leads to the removal of cache entries, a corresponding cache changed event will be dispatched
+   * @param {int} newMaxSize - the new max number of entries for this cache
+   * @return {undefined} void
+   */
   self.setMaxSize = newMaxSize => {
     const keyValueArray = lruMap.setMaxSize(newMaxSize);
     keyValueArray.forEach(keyValuePair => {
@@ -343,6 +383,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
 
 
 const valueTypeToCache = new Map();
+
 
 /**
  * Get a LRU cache for the given valueType.
