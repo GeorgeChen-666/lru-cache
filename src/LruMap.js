@@ -90,7 +90,11 @@ export function LruMap(maxSize = null) {
     oldest: null,
   };
 
-  /** Change the max size of the LruMap. Will return an array of removed entries as key-value-objects (empty in case the existing list had not to be shrinked) */
+  /** Change the max size of the LruMap.
+   *  Will return an array of removed entries as key-value-objects (empty in case the existing Map had not to be shrinked)
+   * @param {int} newMaxSize - The new maximum size of the Map
+   * @return {Array} An array containing all Map entries that were removed due to exceeded max size
+   */
   self.setMaxSize = newMaxSize => {
     sizeLimit = newMaxSize;
     if (sizeLimit === 0) {
@@ -99,13 +103,24 @@ export function LruMap(maxSize = null) {
     return shrinkToMaxSize(sizeLimit, entryList, keyToEntry);
   };
 
-  /** Return current maxSize */
+  /** Return current maxSize
+   * @return {int} The current max size of the Map
+   */
   self.getMaxSize = () => sizeLimit;
 
-  /** Return current size */
+  /** Return current size (number of Map entries)
+   * @return {int} Current number of cache entries
+   */
   self.getSize = () => keyToEntry.size;
 
-  /** Make the given item the newest. If the key already exists in the map, the corresponding item will be replaced by the given one. In case of maxSize being exceeded, the removed entry will be returned (as object with key and value), else null */
+  /** Insert or update Map entry.
+   *  If the key already exists in the Map, the corresponding item will be replaced by the given one.
+   *  Whether inserted or updated, the entry will become the most recently used/updated entry.
+   *  In case of maxSize being exceeded, the removed entry will be returned (as object with key and value), else null
+   * @param {string} key - The key of the entry
+   * @param {object} value - The value of the entry
+   * @return {object | null} LRU-removed entry or null
+   */
   self.set = (key, value) => {
     let entry = keyToEntry.get(key);
     if (typeof entry === "undefined") {
@@ -125,7 +140,10 @@ export function LruMap(maxSize = null) {
     return removals.length === 1 ? removals[0] : null;
   };
 
-  /** Return value for key (undefined if not exists) */
+  /** Return value for key (undefined if not exists)
+   * @param {string} key - The entry key
+   * @return {object} The corresponding value or undefined
+   */
   self.get = key => {
     const entry = keyToEntry.get(key);
     if (typeof entry === "undefined") {
@@ -134,7 +152,10 @@ export function LruMap(maxSize = null) {
     return entry.value;
   };
 
-  /** Remove the entry with the given key from the map. Returns false, in case the key was not in the map */
+  /** Remove the entry with the given key from the map. Returns false, in case the key was not in the map
+   * @param {string} key - The entry key
+   * @return {boolean} true in case the key existed in the Map
+   */
   self.delete = key => {
     const entry = keyToEntry.get(key);
     if (typeof entry === "undefined") {
@@ -144,7 +165,10 @@ export function LruMap(maxSize = null) {
     return true;
   };
 
-  /** Given callback will receive value as first parameter and key as second parameter. Iterates from oldest to newest */
+  /** Given callback will receive value as first parameter and key as second parameter. Iterates from oldest to newest
+   * @param {function} callback - function that will be called with (value, key) for each entry
+   * @return {undefined} void
+   */
   self.forEach = callback => {
     let next = entryList.oldest;
     while (next !== null) {
@@ -153,7 +177,10 @@ export function LruMap(maxSize = null) {
     }
   };
 
-  /** Given callback will receive value as first parameter and key as second parameter. Returns an array. Iterates from oldest to newest */
+  /** Given callback will receive value as first parameter and key as second parameter. Returns an array. Iterates from oldest to newest
+   * @param {function} callback - function that will be called with (value, key) for each entry and returns an item for the resulting array
+   * @return {Array} Array of return values from the callback function
+   */
   self.map = callback => {
     let next = entryList.oldest;
     const result = [];
@@ -164,7 +191,9 @@ export function LruMap(maxSize = null) {
     return result;
   };
 
-  /** Will clear the map and return an array with the removed entries */
+  /** Will clear the map and return an array with the removed entries
+   * @return {Array} Array of all entries (key-value-pairs) that were in the Map prior to clear
+   */
   self.clear = () => {
     const result = self.map((value, key) => ({key, value}));
     keyToEntry.clear();

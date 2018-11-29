@@ -163,11 +163,23 @@ const handleRemove = (valueType, keyValueAlternateKeysIsLruRemove) => {
   handleChange(valueType, keyValueAlternateKeysIsLruRemove, "removes", "inserts");
 };
 
-const setAll = (valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys, finishedCallback = null) => {
+const asyncWrap = syncFunction => (...args) => new Promise((resolve, reject) => {
+  setTimeout(() => {
+    try {
+      const result = syncFunction(...args);
+      resolve(result);
+    }
+    catch (e) {
+      reject(e);
+    }
+  }, 0);
+});
+
+const setAll = (valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys) => {
   if (!Array.isArray(keyValueArray)) {
     throw new Error("LruCache::setAll: argument.keyValueArray must be an array");
   }
-  const transactionCode = () => {
+  cacheTransaction(() => {
     keyValueArray.forEach(pair => {
       const key = pair.key;
       const value = pair.value;
@@ -206,26 +218,10 @@ const setAll = (valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAltern
         removed.value.alternateKeys.forEach(altKey => {
           alternateKeyToKey.delete(altKey);
         });
-        cacheTransaction(() => {
-          handleRemove(valueType, {...entry, isLruRemove: true, isClear: false});
-        });
+        handleRemove(valueType, {...entry, isLruRemove: true, isClear: false});
       }
     });
-  };
-  let transactionCallback = transactionCode;
-  if (finishedCallback !== null) {
-    transactionCallback = async () => { // eslint-disable-line require-await
-      transactionCode();
-    };
-    transactionCallback
-      .then(() => {
-        finishedCallback(null)
-      })
-      .catch(error => {
-        finishedCallback(error)
-      });
-  }
-  transactionCallback();
+  });
 };
 
 const entryGetter = (key, alternateKeyToKey, lruMap) => {
@@ -243,27 +239,17 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
 
   /** */
   self.setAll = ({keyValueArray, keyToAlternateKeys = null}) => {
-    setAll(valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys, null);
+    setAll(valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys);
   };
 
   /** */
-  self.setAllAsync = async ({keyValueArray, keyToAlternateKeys = null}) => new Promise((resolve, reject) => { // eslint-disable-line require-await
-    try {
-      setAll(valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys, error => {
-        if (error === null) {
-          resolve();
-        }
-        else {
-          reject(error);
-        }
-      });
-    }
-    catch (error) {
-      reject(error);
-    }
-  });
+  self.setAllAsync = asyncWrap(self.setAll);
 
-  /** */
+  /** Insert or update a cache entry.
+   *  If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
+   * @param {object} - object with 'key' and 'value' an optional 'alternateKeys'
+   * @return {undefined} void
+   */
   self.set = ({key, value, alternateKeys = null}) => {
     if (alternateKeys === null) {
       self.setAll({
@@ -281,26 +267,11 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   };
 
   /** */
-  self.setAsync = async ({key, value, alternateKeys = null}) => { // eslint-disable-line require-await
-    if (alternateKeys === null) {
-      return self.setAllAsync({
-        keyValueArray: [{key, value}],
-      });
-    }
-    else {
-      const keyToAlternateKeys = new Map();
-      keyToAlternateKeys.set(key, alternateKeys);
-      return self.setAllAsync({
-        keyValueArray: [{key, value}],
-        keyToAlternateKeys,
-      });
-    }
-  };
+  self.setAsync = asyncWrap(self.set);
 
   /** */
   self.get = keyOrAlternateKey => {
     let entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);
-    console.log("get: ", entry);
     if (typeof entry === "undefined") {
       return entry;
     }
@@ -340,6 +311,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   /** */
   self.clear = () => {
     const keyValueArray = lruMap.clear();
+    alternateKeyToKey.clear();
     keyValueArray.forEach(keyValuePair => {
       cacheTransaction(() => {
         handleRemove(valueType, {...keyValuePair.value, isLruRemove: false, isClear: true});
