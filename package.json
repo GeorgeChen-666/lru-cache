@@ -1,0 +1,72 @@
+{
+  "name": "@swife/lru-cache",
+  "version": "0.1.0",
+  "description": "LRU cache with event registry to handle cache changes",
+  "author": "Gerd Neudert",
+  "license": "MIT",
+  "keywords": [
+    "cache",
+    "lru",
+    "lru-cache",
+    "alternate key",
+    "cache events",
+    "change events",
+    "node",
+    "nodejs",
+    "browser",
+    "web"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gneu77/lru-cache"
+  },
+  "main": "build/lru-cache.js",
+  "scripts": {
+    "lint": "eslint \"src/**\" -o lint-report.html -f html",
+    "test": "jest --runInBand",
+    "build": "webpack --config webpack.prod.js"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.js?": "babel-jest"
+    },
+    "globals": {
+      "widow": true
+    },
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "html"
+    ],
+    "reporters": [
+      "default",
+      [
+        "./node_modules/jest-html-reporter",
+        {
+          "pageTitle": "Test Report"
+        }
+      ]
+    ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.1.6",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/preset-env": "^7.1.6",
+    "babel-bridge": "^1.12.11",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-eslint": "^10.0.1",
+    "babel-jest": "^23.6.0",
+    "babel-loader": "^8.0.4",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-loader": "^2.1.1",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-react": "^7.11.1",
+    "jest": "^23.6.0",
+    "jest-html-reporter": "^2.4.2",
+    "uglifyjs-webpack-plugin": "^2.0.1",
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2"
+  }
+}

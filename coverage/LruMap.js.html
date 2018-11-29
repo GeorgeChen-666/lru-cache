@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for LruMap.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="prettify.css" />
+    <link rel="stylesheet" href="base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="index.html">All files</a> LruMap.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>101/101</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">89.19% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>33/37</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>15/15</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>98/98</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">28x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">38x</span>
+<span class="cline-any cline-yes">38x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">&nbsp;
+/* eslint-disable no-param-reassign */
+const makeNewest = (entry, entryList) =&gt; {
+  if (entry === entryList.newest) {
+    // entry already is newest
+    return;
+  }
+  if (entryList.newest === null) {
+    // first entry
+    entryList.newest = entry;
+    entryList.oldest = entry;
+    return;
+  }
+  const eNext = entry.next;
+  const ePrev = entry.prev;
+  const oldNewest = entryList.newest;
+  entry.next = null;
+  entry.prev = entryList.newest;
+  entryList.newest = entry;
+  if (eNext !== null) {
+    eNext.prev = ePrev;
+    if (entryList.oldest === entry) {
+      entryList.oldest = eNext;
+    }
+  }
+  <span class="missing-if-branch" title="else path not taken" >E</span>if (oldNewest !== null) {
+    oldNewest.next = entry;
+    entry.prev = oldNewest;
+  }
+  if (ePrev !== null) {
+    ePrev.next = eNext;
+  }
+};
+&nbsp;
+/* eslint-disable no-param-reassign */
+const removeEntry = (entry, entryList, keyToEntry) =&gt; {
+  if (entry.next === null) {
+    entryList.newest = entry.prev;
+  }
+  else {
+    entry.next.prev = entry.prev;
+  }
+  if (entry.prev === null) {
+    entryList.oldest = entry.next;
+  }
+  else {
+    entry.prev.next = entry.next;
+  }
+  keyToEntry.delete(entry.key);
+};
+&nbsp;
+const removeOldest = (entryList, keyToEntry) =&gt; {
+  const removedEntry = entryList.oldest;
+  <span class="missing-if-branch" title="else path not taken" >E</span>if (keyToEntry.delete(entryList.oldest.key)) {
+    entryList.oldest = entryList.oldest.next;
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (entryList.oldest !== null) {
+      entryList.oldest.prev = null;
+    }
+  }
+  delete removedEntry.next;
+  delete removedEntry.prev;
+  return removedEntry;
+};
+&nbsp;
+const shrinkToMaxSize = (maxSize, entryList, keyToEntry) =&gt; {
+  const removals = [];
+  if (maxSize === null) {
+    return removals;
+  }
+  while (keyToEntry.size &gt; maxSize) {
+    removals.push(removeOldest(entryList, keyToEntry));
+  }
+  return removals;
+};
+&nbsp;
+&nbsp;
+/** Map object that provides LRU logic, removing oldest entry in case adding a new one exceeds the set max size
+ * @param {int} maxSize - maximum size for the LRU Map. If null or not specified, then the size is unlimited
+ * @return {LruMap} - an object with methods setMaxSize, getMaxSize, getSize, set, get, delete, clear, forEach and map
+ */
+export function LruMap(maxSize = null) {
+  const self = this instanceof LruMap ? <span class="branch-0 cbranch-no" title="branch not covered" >this </span>: Object.create(LruMap.prototype);
+  let sizeLimit = maxSize;
+  if (sizeLimit === 0) {
+    sizeLimit = null;
+  }
+  const keyToEntry = new Map();
+  const entryList = {
+    newest: null,
+    oldest: null,
+  };
+&nbsp;
+  /** Change the max size of the LruMap. Will return an array of removed entries as key-value-objects (empty in case the existing list had not to be shrinked) */
+  self.setMaxSize = newMaxSize =&gt; {
+    sizeLimit = newMaxSize;
+    if (sizeLimit === 0) {
+      sizeLimit = null;
+    }
+    return shrinkToMaxSize(sizeLimit, entryList, keyToEntry);
+  };
+&nbsp;
+  /** Return current maxSize */
+  self.getMaxSize = () =&gt; sizeLimit;
+&nbsp;
+  /** Return current size */
+  self.getSize = () =&gt; keyToEntry.size;
+&nbsp;
+  /** Make the given item the newest. If the key already exists in the map, the corresponding item will be replaced by the given one. In case of maxSize being exceeded, the removed entry will be returned (as object with key and value), else null */
+  self.set = (key, value) =&gt; {
+    let entry = keyToEntry.get(key);
+    if (typeof entry === "undefined") {
+      entry = {
+        key,
+        value,
+        next: null,
+        prev: null,
+      };
+      keyToEntry.set(key, entry);
+    }
+    else {
+      entry.value = value;
+    }
+    makeNewest(entry, entryList);
+    const removals = shrinkToMaxSize(sizeLimit, entryList, keyToEntry);
+    return removals.length === 1 ? removals[0] : null;
+  };
+&nbsp;
+  /** Return value for key (undefined if not exists) */
+  self.get = key =&gt; {
+    const entry = keyToEntry.get(key);
+    if (typeof entry === "undefined") {
+      return entry;
+    }
+    return entry.value;
+  };
+&nbsp;
+  /** Remove the entry with the given key from the map. Returns false, in case the key was not in the map */
+  self.delete = key =&gt; {
+    const entry = keyToEntry.get(key);
+    if (typeof entry === "undefined") {
+      return false;
+    }
+    removeEntry(entry, entryList, keyToEntry);
+    return true;
+  };
+&nbsp;
+  /** Given callback will receive value as first parameter and key as second parameter. Iterates from oldest to newest */
+  self.forEach = callback =&gt; {
+    let next = entryList.oldest;
+    while (next !== null) {
+      callback(next.value, next.key); // eslint-disable-line callback-return
+      next = next.next;
+    }
+  };
+&nbsp;
+  /** Given callback will receive value as first parameter and key as second parameter. Returns an array. Iterates from oldest to newest */
+  self.map = callback =&gt; {
+    let next = entryList.oldest;
+    const result = [];
+    while (next !== null) {
+      result.push(callback(next.value, next.key)); // eslint-disable-line callback-return
+      next = next.next;
+    }
+    return result;
+  };
+&nbsp;
+  /** Will clear the map and return an array with the removed entries */
+  self.clear = () =&gt; {
+    const result = self.map((value, key) =&gt; ({key, value}));
+    keyToEntry.clear();
+    entryList.newest = null;
+    entryList.oldest = null;
+    return result;
+  };
+&nbsp;
+  return self;
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Thu Nov 29 2018 18:10:52 GMT+0100 (Central European Standard Time)
+</div>
+</div>
+<script src="prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="sorter.js"></script>
+</body>
+</html>
