@@ -1,6 +1,6 @@
 /.git
 /.idea
 /coverage
-/doc
+/docs
 lint-report.html
 test-report.html
