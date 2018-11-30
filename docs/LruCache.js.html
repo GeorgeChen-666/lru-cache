@@ -43,16 +43,20 @@ const keyToChangedHandler = new Map();
  * The returned handle can be used to unregister the handler, or to deactivate/activate it (initial state is active).
  * @memberof @swife/lru-cache
  * @function
- * @param {function} changedHandler - A function that will be called with an object parameter of the following shape
+ * @param {function} changedHandler - A function that will be called with an object parameter of the following shape:
  *                   {
  *                     valueTypes: Set(),
  *                     &lt;valueType>: {
- *                       inserts: [{key, value, alternateKeys}],
- *                       removes: [{key, value, alternateKeys, isLruRemove, isClear}]
+ *                       inserts: [{key, value, alternateKeys, order}],
+ *                       clearRemoves: [{key, value, alternateKeys, order}],
+ *                       lruRemoves: [{key, value, alternateKeys, order}],
+ *                       deleteRemoves: [{key, value, alternateKeys, order}],
  *                     },
  *                     ...
  *                   }
- * @param {string} valueTypes - An array specifying the cache value types the handler should be called for (default: null)
+ *                   The order can be used to determine e.g. if an entry was first inserted and then deleted, or first
+ *                   deleted and then re-inserted (can happen in cache transactions).
+ * @param {Array} valueTypes - An array specifying the cache value types the handler should be called for (default: null)
  *                 If null, it will be called for all object types
  *                 If not null and a bulk (transactional) change has multiple valueTypes of which only some are of
  *                 interest for the handler, then also the other types will be part of the argument (all or nothing)
@@ -119,22 +123,20 @@ const handleTransactionChangeObject = changeObject => {
 
 
 let transactionChangeObject = null;
-let batchedCallbacksOrPromises = [];
-
-const cacheTransactionRecursive = callbackOrPromise => {
+let changeOrder = 0;
+let runningTransactions = 0;
+const cacheTransactionIntern = callbackOrPromise => {
   if (typeof callbackOrPromise.finally === "function") {
     callbackOrPromise.finally(() => {
-      const next = batchedCallbacksOrPromises.shift();
-      if (typeof next === "undefined") {
+      runningTransactions -= 1;
+      if (runningTransactions === 0) {
         try {
           handleTransactionChangeObject(transactionChangeObject);
         }
         finally {
           transactionChangeObject = null;
+          changeOrder = 0;
         }
-      }
-      else {
-        cacheTransactionRecursive(next);
       }
     });
   }
@@ -143,11 +145,15 @@ const cacheTransactionRecursive = callbackOrPromise => {
       callbackOrPromise();
     }
     finally {
-      try {
-        handleTransactionChangeObject(transactionChangeObject);
-      }
-      finally {
-        transactionChangeObject = null;
+      runningTransactions -= 1;
+      if (runningTransactions === 0) {
+        try {
+          handleTransactionChangeObject(transactionChangeObject);
+        }
+        finally {
+          transactionChangeObject = null;
+          changeOrder = 0;
+        }
       }
     }
   }
@@ -163,19 +169,17 @@ const cacheTransactionRecursive = callbackOrPromise => {
  * @return {undefined} void
  */
 export const cacheTransaction = callbackOrPromise => {
-  if (transactionChangeObject !== null) {
-    // There is already a transaction in progress, so we will just batch this one together with the one being in progress:
-    batchedCallbacksOrPromises.push(callbackOrPromise);
-    return;
+  if (transactionChangeObject === null) {
+    transactionChangeObject = {
+      valueTypes: new Set(),
+    };
   }
-  transactionChangeObject = {
-    valueTypes: new Set(),
-  };
-  cacheTransactionRecursive(callbackOrPromise);
+  runningTransactions += 1;
+  cacheTransactionIntern(callbackOrPromise);
 };
 
 
-const handleChange = (valueType, keyValueAlternateKeysIsLruRemove, fieldNameAdd, fieldNameUnchanged) => {
+const handleChange = (valueType, keyValueAlternateKeys, fieldNameAdd, fieldNamesUnchanged) => {
   let changeObject = transactionChangeObject;
   const batchChanges = changeObject !== null;
   if (changeObject === null) {
@@ -184,12 +188,18 @@ const handleChange = (valueType, keyValueAlternateKeysIsLruRemove, fieldNameAdd,
     };
   }
   if (changeObject.valueTypes.has(valueType)) {
-    changeObject[fieldNameAdd].push(keyValueAlternateKeysIsLruRemove);
+    // Copying the original entry is not just done to add the order, but is mandatory to get the value
+    // at the point of change and not the current cache value in the change event!
+    changeObject[valueType][fieldNameAdd].push({...keyValueAlternateKeys, order: changeOrder++});
   }
   else {
     changeObject.valueTypes.add(valueType);
-    changeObject[fieldNameAdd] = [keyValueAlternateKeysIsLruRemove];
-    changeObject[fieldNameUnchanged] = [];
+    changeObject[valueType] = {
+      [fieldNameAdd]: [{...keyValueAlternateKeys, order: changeOrder++}],
+    };
+    fieldNamesUnchanged.forEach(fieldName => {
+      changeObject[valueType][fieldName] = [];
+    })
   }
   if (!batchChanges) {
     handleTransactionChangeObject(changeObject);
@@ -197,11 +207,19 @@ const handleChange = (valueType, keyValueAlternateKeysIsLruRemove, fieldNameAdd,
 };
 
 const handleInsert = (valueType, keyValueAlternateKeys) => {
-  handleChange(valueType, keyValueAlternateKeys, "inserts", "removes");
+  handleChange(valueType, keyValueAlternateKeys, "inserts", ["clearRemoves", "lruRemoves", "deleteRemoves"]);
 };
 
-const handleRemove = (valueType, keyValueAlternateKeysIsLruRemove) => {
-  handleChange(valueType, keyValueAlternateKeysIsLruRemove, "removes", "inserts");
+const handleClearRemove = (valueType, keyValueAlternateKeys) => {
+  handleChange(valueType, keyValueAlternateKeys, "clearRemoves", ["inserts", "lruRemoves", "deleteRemoves"]);
+};
+
+const handleLruRemove = (valueType, keyValueAlternateKeys) => {
+  handleChange(valueType, keyValueAlternateKeys, "lruRemoves", ["clearRemoves", "inserts", "deleteRemoves"]);
+};
+
+const handleDeleteRemove = (valueType, keyValueAlternateKeys) => {
+  handleChange(valueType, keyValueAlternateKeys, "deleteRemoves", ["clearRemoves", "lruRemoves", "inserts"]);
 };
 
 const asyncWrap = syncFunction => (...args) => new Promise((resolve, reject) => {
@@ -216,59 +234,53 @@ const asyncWrap = syncFunction => (...args) => new Promise((resolve, reject) => 
   }, 0);
 });
 
-const setAll = (valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys) => {
-  if (!Array.isArray(keyValueArray)) {
-    throw new Error("LruCache::setAll: argument.keyValueArray must be an array");
+const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray) => {
+  if (!Array.isArray(keyValueAlternateKeysArray)) {
+    throw new Error("LruCache::setAll: keyValueAlternateKeysArray must be an array");
   }
   cacheTransaction(() => {
-    keyValueArray.forEach(pair => {
-      const key = pair.key;
-      const value = pair.value;
+    keyValueAlternateKeysArray.forEach(({key, value, alternateKeys}) => {
       let entry = lruMap.get(key);
-      let alternateKeys = [];
-      if (keyToAlternateKeys !== null &amp;&amp; keyToAlternateKeys.has(key)) {
-        alternateKeys = keyToAlternateKeys.get(key);
-        if (!Array.isArray(alternateKeys)) {
-          alternateKeys = alternateKeys ? [alternateKeys] : [];
-        }
-        alternateKeys.forEach(altKey => {
-          if (alternateKeyToKey.has(altKey) &amp;&amp; alternateKeyToKey.get(altKey) !== key) {
-            throw new Error("LruCache::setAll: alternate key '" + altKey + "' is given for key '" + key + "' and value type '" + valueType + "' but is already used for key '" + alternateKeyToKey.get(altKey) + "'");
-          }
-        });
+      let altKeys = Array.isArray(alternateKeys) ? alternateKeys : [];
+      if (altKeys.length === 0 &amp;&amp; typeof alternateKeys === "string") {
+        altKeys = [alternateKeys];
       }
-      alternateKeys = new Set(alternateKeys);
+      altKeys.forEach(altKey => {
+        if (alternateKeyToKey.has(altKey) &amp;&amp; alternateKeyToKey.get(altKey) !== key) {
+          throw new Error("LruCache::setAll: alternate key '" + altKey + "' is given for key '" + key + "' and value type '" + valueType + "' but is already used for key '" + alternateKeyToKey.get(altKey) + "'");
+        }
+      });
+      altKeys = new Set(altKeys);
       if (typeof entry === "undefined") {
         entry = {
           key,
           value,
-          alternateKeys,
+          alternateKeys: altKeys,
         };
-        lruMap.set(key, entry);
       }
       else {
         entry.value = value;
-        entry.alternateKeys = new Set([...entry.alternateKeys, ...alternateKeys]);
+        entry.alternateKeys = new Set([...entry.alternateKeys, ...altKeys]);
       }
       const removed = lruMap.set(key, entry);
-      alternateKeys.forEach(altKey => {
+      altKeys.forEach(altKey => {
         alternateKeyToKey.set(altKey, key);
       });
-      handleInsert(valueType, {entry});
+      handleInsert(valueType, entry);
       if (removed !== null) {
         removed.value.alternateKeys.forEach(altKey => {
           alternateKeyToKey.delete(altKey);
         });
-        handleRemove(valueType, {...entry, isLruRemove: true, isClear: false});
+        handleLruRemove(valueType, removed.value);
       }
     });
   });
 };
 
-const entryGetter = (key, alternateKeyToKey, lruMap) => {
-  let entry = lruMap.get(key);
+const entryGetter = (key, alternateKeyToKey, getter) => {
+  let entry = getter(key);
   if (typeof entry === "undefined" &amp;&amp; alternateKeyToKey.has(key)) {
-    entry = lruMap.get(alternateKeyToKey.get(key));
+    entry = getter(alternateKeyToKey.get(key));
   }
   return entry;
 };
@@ -286,19 +298,21 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   /** Insert or update multiple cache entries.
    *  If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
    *  A corresponding cache changed event will be dispatched.
-   *  If an inserts lead to cache max size being exceeded, the changed event will contain both, inserts and removes.
+   *  If inserts lead to cache max size being exceeded, the changed event will contain both, inserts and removes.
+   *  It is even possible that an entry from the inserts is also contained in the removes.
    * @memberof LruCache
    * @function
-   * @param {object} - object with 'keyValueArray' and optional 'keyToAlternateKeys'
+   * @param {Array} keyValueAlternateKeysArray - array of objects with 'key', 'value' and optional 'alternateKeys'
    * @returns {undefined} void
    */
-  self.setAll = ({keyValueArray, keyToAlternateKeys = null}) => {
-    setAll(valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys);
+  self.setAll = keyValueAlternateKeysArray => {
+    setAll(valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray);
   };
 
   /** Like 'setAll', but returning a Promise that is executed in another event loop.
    * @memberof LruCache
    * @function
+   * @returns {Promise}
    */
   self.setAllAsync = asyncWrap(self.setAll);
 
@@ -308,28 +322,17 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    *  If an insert leads to cache max size being exceeded, the cached change event will contain both, insert and remove.
    * @memberof LruCache
    * @function
-   * @param {object} - object with 'key' and 'value' and optional 'alternateKeys'
+   * @param {object} keyValueAlternateKeys - object with 'key' and 'value' and optional 'alternateKeys'
    * @returns {undefined} void
    */
-  self.set = ({key, value, alternateKeys = null}) => {
-    if (alternateKeys === null) {
-      self.setAll({
-        keyValueArray: [{key, value}],
-      });
-    }
-    else {
-      const keyToAlternateKeys = new Map();
-      keyToAlternateKeys.set(key, alternateKeys);
-      self.setAll({
-        keyValueArray: [{key, value}],
-        keyToAlternateKeys,
-      });
-    }
+  self.set = keyValueAlternateKeys => {
+    self.setAll([keyValueAlternateKeys]);
   };
 
   /** Like 'set', but returning a Promise that is executed in another event loop.
    * @memberof LruCache
    * @function
+   * @returns {Promise}
    */
   self.setAsync = asyncWrap(self.set);
 
@@ -342,12 +345,8 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @returns {object | undefined} object, if the key is in cache, else undefined
    */
   self.get = keyOrAlternateKey => {
-    let entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);
-    if (typeof entry === "undefined") {
-      return entry;
-    }
-    lruMap.set(entry.key, entry); // to make it the newest (last recent used)
-    return entry.value;
+    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.get);
+    return typeof entry === "undefined" ? entry : entry.value;
   };
 
   /** Like 'get', but not making the corresponding entry the last recently used.
@@ -357,11 +356,8 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @returns {object | undefined} object, if the key is in cache, else undefined
    */
   self.getWithoutLruChange = keyOrAlternateKey => {
-    let entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);
-    if (typeof entry === "undefined") {
-      return entry;
-    }
-    return entry.value;
+    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.getWithoutLruChange);
+    return typeof entry === "undefined" ? entry : entry.value;
   };
 
   /** Delete entry from cache by key or alternate key.
@@ -372,7 +368,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @returns {boolean} true, if the key was in the cache.
    */
   self.delete = keyOrAlternateKey => {
-    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);
+    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.getWithoutLruChange);
     if (typeof entry === "undefined") {
       return false;
     }
@@ -380,7 +376,11 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     entry.alternateKeys.forEach(altKey => {
       alternateKeyToKey.delete(altKey);
     });
-    handleRemove(valueType, {...entry, isLruRemove: false, isClear: false});
+    // It is important to warp even single actions into cacheTransaction to get consistent behavior,
+    // e.g. to always reset 'order', even after a delete
+    cacheTransaction(() => {
+      handleDeleteRemove(valueType, entry);
+    });
     return true;
   };
 
@@ -407,9 +407,9 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   self.clear = () => {
     const keyValueArray = lruMap.clear();
     alternateKeyToKey.clear();
-    keyValueArray.forEach(keyValuePair => {
-      cacheTransaction(() => {
-        handleRemove(valueType, {...keyValuePair.value, isLruRemove: false, isClear: true});
+    cacheTransaction(() => {
+      keyValueArray.forEach(keyValuePair => {
+        handleClearRemove(valueType, keyValuePair.value);
       });
     });
   };
@@ -419,7 +419,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @function
    * @returns {int} current number of entries in this cache
    */
-  self.getSize = lruMap.getSize();
+  self.getSize = lruMap.getSize;
 
   /** Get the value type of this cache.
    * @memberof LruCache
@@ -433,7 +433,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @function
    * @returns {int} max size of this cache
    */
-  self.getMaxSize = lruMap.getMaxSize();
+  self.getMaxSize = lruMap.getMaxSize;
 
   /** Set a new max size for this cache.
    *  If this leads to the removal of cache entries, a corresponding cache changed event will be dispatched.
@@ -446,7 +446,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     const keyValueArray = lruMap.setMaxSize(newMaxSize);
     keyValueArray.forEach(keyValuePair => {
       cacheTransaction(() => {
-        handleRemove(valueType, {...keyValuePair.value, isLruRemove: true, isClear: false});
+        handleLruRemove(valueType, keyValuePair.value);
       });
     });
   };
@@ -506,7 +506,7 @@ export const clearAllCaches = () => {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Nov 30 2018 01:57:49 GMT+0100 (Central European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Nov 30 2018 19:50:41 GMT+0100 (Central European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

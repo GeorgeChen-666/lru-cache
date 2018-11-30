@@ -1,4 +1,7 @@
+/* eslint-disable no-magic-number */
+
 import {LruMap} from "../LruMap";
+
 
 describe("LruMap", () => {
   it("should take maxSize as constructor argument and should provide getMaxSize method", () => {

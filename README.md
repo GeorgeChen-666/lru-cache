@@ -1,5 +1,3 @@
-# WIP
-
 # lru-cache
 A Javascript LRU-cache for node and/or browser, featuring:
 * LRU cache logic

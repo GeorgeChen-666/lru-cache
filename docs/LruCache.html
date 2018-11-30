@@ -165,7 +165,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line248">line 248</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line260">line 260</a>
     </li></ul></dd>
     
 
@@ -430,7 +430,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line346">line 346</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line342">line 342</a>
     </li></ul></dd>
     
 
@@ -676,7 +676,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line316">line 316</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line319">line 319</a>
     </li></ul></dd>
     
 
@@ -1268,7 +1268,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line331">line 331</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line330">line 330</a>
     </li></ul></dd>
     
 
@@ -1327,7 +1327,7 @@
     
 
     
-    <h4 class="name" id=".self.set"><span class="type-signature">(static) </span>self.set<span class="signature">()</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+    <h4 class="name" id=".self.set"><span class="type-signature">(static) </span>self.set<span class="signature">(keyValueAlternateKeys)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
     
 
     
@@ -1356,6 +1356,8 @@
     <thead>
     <tr>
         
+        <th>Name</th>
+        
 
         <th>Type</th>
 
@@ -1371,6 +1373,8 @@
     
 
         <tr>
+            
+                <td class="name"><code>keyValueAlternateKeys</code></td>
             
 
             <td class="type">
@@ -1427,7 +1431,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line286">line 286</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line300">line 300</a>
     </li></ul></dd>
     
 
@@ -1483,7 +1487,7 @@
     
 
     
-    <h4 class="name" id=".self.setAll"><span class="type-signature">(static) </span>self.setAll<span class="signature">()</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+    <h4 class="name" id=".self.setAll"><span class="type-signature">(static) </span>self.setAll<span class="signature">(keyValueAlternateKeysArray)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
     
 
     
@@ -1494,7 +1498,8 @@
     Insert or update multiple cache entries.
  If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
  A corresponding cache changed event will be dispatched.
- If an inserts lead to cache max size being exceeded, the changed event will contain both, inserts and removes.
+ If inserts lead to cache max size being exceeded, the changed event will contain both, inserts and removes.
+ It is even possible that an entry from the inserts is also contained in the removes.
 </div>
 
 
@@ -1512,6 +1517,8 @@
     <thead>
     <tr>
         
+        <th>Name</th>
+        
 
         <th>Type</th>
 
@@ -1528,11 +1535,13 @@
 
         <tr>
             
+                <td class="name"><code>keyValueAlternateKeysArray</code></td>
+            
 
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type">Array</span>
 
 
             
@@ -1542,7 +1551,7 @@
 
             
 
-            <td class="description last">object with 'keyValueArray' and optional 'keyToAlternateKeys'</td>
+            <td class="description last">array of objects with 'key', 'value' and optional 'alternateKeys'</td>
         </tr>
 
     
@@ -1583,7 +1592,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line267">line 267</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line280">line 280</a>
     </li></ul></dd>
     
 
@@ -1639,7 +1648,7 @@
     
 
     
-    <h4 class="name" id=".self.setAllAsync"><span class="type-signature">(static) </span>self.setAllAsync<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".self.setAllAsync"><span class="type-signature">(static) </span>self.setAllAsync<span class="signature">()</span><span class="type-signature"> &rarr; {Promise}</span></h4>
     
 
     
@@ -1691,7 +1700,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line275">line 275</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line289">line 289</a>
     </li></ul></dd>
     
 
@@ -1714,6 +1723,24 @@
 
 
 
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -1725,7 +1752,7 @@
     
 
     
-    <h4 class="name" id=".self.setAsync"><span class="type-signature">(static) </span>self.setAsync<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".self.setAsync"><span class="type-signature">(static) </span>self.setAsync<span class="signature">()</span><span class="type-signature"> &rarr; {Promise}</span></h4>
     
 
     
@@ -1777,7 +1804,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line306">line 306</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line309">line 309</a>
     </li></ul></dd>
     
 
@@ -1800,6 +1827,24 @@
 
 
 
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -1985,7 +2030,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Nov 30 2018 01:57:49 GMT+0100 (Central European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Nov 30 2018 19:50:41 GMT+0100 (Central European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

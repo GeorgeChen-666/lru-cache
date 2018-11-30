@@ -1,9 +1,10 @@
+/* eslint-disable no-magic-number, max-lines */
+
 import {
   getCache,
   cacheTransaction,
   registerCacheChangedHandler,
 } from "../LruCache";
-
 
 const VALUE_TYPE_1 = "valueType1";
 const VALUE_TYPE_2 = "valueType2";
