@@ -20,7 +20,9 @@ const keyToChangedHandler = new Map();
  *                     valueTypes: Set(),
  *                     <valueType>: {
  *                       inserts: [{key, value, alternateKeys}],
- *                       removes: [{key, value, alternateKeys, isLruRemove, isClear}]
+ *                       clearRemoves: [{key, value, alternateKeys}],
+ *                       lruRemoves: [{key, value, alternateKeys}],
+ *                       deleteRemoves: [{key, value, alternateKeys}],
  *                     },
  *                     ...
  *                   }
@@ -147,7 +149,7 @@ export const cacheTransaction = callbackOrPromise => {
 };
 
 
-const handleChange = (valueType, keyValueAlternateKeysIsLruRemove, fieldNameAdd, fieldNameUnchanged) => {
+const handleChange = (valueType, keyValueAlternateKeysIsLruRemove, fieldNameAdd, fieldNamesUnchanged) => {
   let changeObject = transactionChangeObject;
   const batchChanges = changeObject !== null;
   if (changeObject === null) {
@@ -156,12 +158,16 @@ const handleChange = (valueType, keyValueAlternateKeysIsLruRemove, fieldNameAdd,
     };
   }
   if (changeObject.valueTypes.has(valueType)) {
-    changeObject[fieldNameAdd].push(keyValueAlternateKeysIsLruRemove);
+    changeObject[valueType][fieldNameAdd].push(keyValueAlternateKeysIsLruRemove);
   }
   else {
     changeObject.valueTypes.add(valueType);
-    changeObject[fieldNameAdd] = [keyValueAlternateKeysIsLruRemove];
-    changeObject[fieldNameUnchanged] = [];
+    changeObject[valueType] = {
+      [fieldNameAdd]: [keyValueAlternateKeysIsLruRemove],
+    };
+    fieldNamesUnchanged.forEach(fieldName => {
+      changeObject[valueType][fieldName] = [];
+    })
   }
   if (!batchChanges) {
     handleTransactionChangeObject(changeObject);
@@ -169,11 +175,19 @@ const handleChange = (valueType, keyValueAlternateKeysIsLruRemove, fieldNameAdd,
 };
 
 const handleInsert = (valueType, keyValueAlternateKeys) => {
-  handleChange(valueType, keyValueAlternateKeys, "inserts", "removes");
+  handleChange(valueType, keyValueAlternateKeys, "inserts", ["clearRemoves", "lruRemoves", "deleteRemoves"]);
 };
 
-const handleRemove = (valueType, keyValueAlternateKeysIsLruRemove) => {
-  handleChange(valueType, keyValueAlternateKeysIsLruRemove, "removes", "inserts");
+const handleClearRemove = (valueType, keyValueAlternateKeysIsLruRemove) => {
+  handleChange(valueType, keyValueAlternateKeysIsLruRemove, "clearRemoves", ["inserts", "lruRemoves", "deleteRemoves"]);
+};
+
+const handleLruRemove = (valueType, keyValueAlternateKeysIsLruRemove) => {
+  handleChange(valueType, keyValueAlternateKeysIsLruRemove, "lruRemoves", ["clearRemoves", "inserts", "deleteRemoves"]);
+};
+
+const handleDeleteRemove = (valueType, keyValueAlternateKeysIsLruRemove) => {
+  handleChange(valueType, keyValueAlternateKeysIsLruRemove, "deleteRemoves", ["clearRemoves", "lruRemoves", "inserts"]);
 };
 
 const asyncWrap = syncFunction => (...args) => new Promise((resolve, reject) => {
@@ -211,7 +225,6 @@ const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray
           value,
           alternateKeys: altKeys,
         };
-        lruMap.set(key, entry);
       }
       else {
         entry.value = value;
@@ -221,21 +234,21 @@ const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray
       altKeys.forEach(altKey => {
         alternateKeyToKey.set(altKey, key);
       });
-      handleInsert(valueType, {entry});
+      handleInsert(valueType, entry);
       if (removed !== null) {
         removed.value.alternateKeys.forEach(altKey => {
           alternateKeyToKey.delete(altKey);
         });
-        handleRemove(valueType, {...entry, isLruRemove: true, isClear: false});
+        handleLruRemove(valueType, removed.value);
       }
     });
   });
 };
 
-const entryGetter = (key, alternateKeyToKey, lruMap) => {
-  let entry = lruMap.get(key);
+const entryGetter = (key, alternateKeyToKey, getter) => {
+  let entry = getter(key);
   if (typeof entry === "undefined" && alternateKeyToKey.has(key)) {
-    entry = lruMap.get(alternateKeyToKey.get(key));
+    entry = getter(alternateKeyToKey.get(key));
   }
   return entry;
 };
@@ -299,12 +312,8 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @returns {object | undefined} object, if the key is in cache, else undefined
    */
   self.get = keyOrAlternateKey => {
-    let entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);
-    if (typeof entry === "undefined") {
-      return entry;
-    }
-    lruMap.set(entry.key, entry); // to make it the newest (last recent used)
-    return entry.value;
+    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.get);
+    return typeof entry === "undefined" ? entry : entry.value;
   };
 
   /** Like 'get', but not making the corresponding entry the last recently used.
@@ -314,11 +323,8 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @returns {object | undefined} object, if the key is in cache, else undefined
    */
   self.getWithoutLruChange = keyOrAlternateKey => {
-    let entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);
-    if (typeof entry === "undefined") {
-      return entry;
-    }
-    return entry.value;
+    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.getWithoutLruChange);
+    return typeof entry === "undefined" ? entry : entry.value;
   };
 
   /** Delete entry from cache by key or alternate key.
@@ -329,7 +335,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @returns {boolean} true, if the key was in the cache.
    */
   self.delete = keyOrAlternateKey => {
-    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);
+    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.getWithoutLruChange);
     if (typeof entry === "undefined") {
       return false;
     }
@@ -337,7 +343,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     entry.alternateKeys.forEach(altKey => {
       alternateKeyToKey.delete(altKey);
     });
-    handleRemove(valueType, {...entry, isLruRemove: false, isClear: false});
+    handleDeleteRemove(valueType, entry);
     return true;
   };
 
@@ -364,9 +370,9 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   self.clear = () => {
     const keyValueArray = lruMap.clear();
     alternateKeyToKey.clear();
-    keyValueArray.forEach(keyValuePair => {
-      cacheTransaction(() => {
-        handleRemove(valueType, {...keyValuePair.value, isLruRemove: false, isClear: true});
+    cacheTransaction(() => {
+      keyValueArray.forEach(keyValuePair => {
+        handleClearRemove(valueType, keyValuePair.value);
       });
     });
   };
@@ -403,7 +409,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     const keyValueArray = lruMap.setMaxSize(newMaxSize);
     keyValueArray.forEach(keyValuePair => {
       cacheTransaction(() => {
-        handleRemove(valueType, {...keyValuePair.value, isLruRemove: true, isClear: false});
+        handleLruRemove(valueType, keyValuePair.value);
       });
     });
   };

@@ -163,6 +163,120 @@ describe("LruCache", () => {
     cache1.clear();
   });
 
+  it("should provide a 'getSize' method", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+    expect(cache1.getSize()).toEqual(0);
+
+    cache1.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 1",
+        alternateKeys: ["myAltKey1"],
+      },
+      {
+        key: "key2",
+        value: "value2 of type 1",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+    expect(cache1.getSize()).toEqual(2);
+
+    cache1.set({
+      key: "key1",
+      value: "value1 of type 1 modified",
+    });
+    expect(cache1.getSize()).toEqual(2);
+
+    cache1.clear();
+    expect(cache1.getSize()).toEqual(0);
+  });
+
+  it("should provide a 'delete' method that works with key or alternate key", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    cache1.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 1",
+        alternateKeys: "myAltKey1",
+      },
+      {
+        key: "key2",
+        value: "value2 of type 1",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+    const deleteResult1 = cache1.delete("key1");
+    const deleteResult2 = cache1.delete("key1");
+    expect(cache1.getSize()).toEqual(1);
+    const deleteResult3 = cache1.delete("myAltKey2");
+    const deleteResult4 = cache1.delete("key2");
+    expect(deleteResult1).toBeTruthy();
+    expect(deleteResult2).toBeFalsy();
+    expect(deleteResult3).toBeTruthy();
+    expect(deleteResult4).toBeFalsy();
+    expect(cache1.getSize()).toEqual(0);
+
+    cache1.clear();
+  });
+
+  it("should provide a 'getValueType' method", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+    expect(cache1.getValueType()).toEqual(VALUE_TYPE_1);
+    cache1.clear();
+  });
+
+  it("should provide a 'getEntries' method", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    cache1.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 1",
+        alternateKeys: "myAltKey1",
+      },
+      {
+        key: "key2",
+        value: "value2 of type 1",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+    const entries = cache1.getEntries();
+    expect(entries[1].alternateKeys.has("myAltKey2")).toBeTruthy();
+
+    cache1.clear();
+  });
+
+  it("should provide a 'forEach' method that iterates from oldest to newest entry", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    cache1.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 1",
+        alternateKeys: "myAltKey1",
+      },
+      {
+        key: "key2",
+        value: "value2 of type 1",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+    let entries = [];
+    cache1.forEach(entry => {
+      entries.push(entry);
+    });
+    expect(entries[1].alternateKeys.has("myAltKey2")).toBeTruthy();
+    cache1.get("key1");
+    entries = [];
+    cache1.forEach(entry => {
+      entries.push(entry);
+    });
+    expect(entries[1].alternateKeys.has("myAltKey1")).toBeTruthy();
+
+    cache1.clear();
+  });
+
 });
 
 
@@ -193,13 +307,16 @@ describe("getCache", () => {
 
 
 describe("registerCacheChangedHandler", () => {
-  it("should register a listener to cache change events", () => {
+
+  it("should register a listener to cache change events and return a handlerHandle to activat/deactivate or unregister the listener", () => {
     const cache1 = getCache(VALUE_TYPE_1);
 
     let changeCounter = 0;
-    registerCacheChangedHandler(() => {
+    const handlerHandle = registerCacheChangedHandler(() => {
       changeCounter += 1;
     });
+    expect(handlerHandle.isActive).toBeTruthy();
+    expect(handlerHandle.isRegistered()).toBeTruthy();
 
     cache1.set({
       key: "key1",
@@ -207,25 +324,200 @@ describe("registerCacheChangedHandler", () => {
     });
     expect(changeCounter).toEqual(1);
 
-    cache1.clear();
-    expect(changeCounter).toEqual(2);
-  });
-
-  it("should register a listener to cache change events", () => {
-    const cache1 = getCache(VALUE_TYPE_1);
-
-    let changeCounter = 0;
-    registerCacheChangedHandler(() => {
-      changeCounter += 1;
-    });
-
+    handlerHandle.deactivate();
+    expect(handlerHandle.isActive).toBeFalsy();
     cache1.set({
       key: "key1",
-      value: "value1 of type 1",
+      value: "value1 of type 1 mod1",
     });
     expect(changeCounter).toEqual(1);
 
-    cache1.clear();
+    handlerHandle.activate();
+    expect(handlerHandle.isActive).toBeTruthy();
+    cache1.set({
+      key: "key1",
+      value: "value1 of type 1 mod2",
+    });
     expect(changeCounter).toEqual(2);
+
+    handlerHandle.unregister();
+    expect(handlerHandle.isRegistered()).toBeFalsy();
+    cache1.set({
+      key: "key1",
+      value: "value1 of type 1 mod3",
+    });
+    expect(changeCounter).toEqual(2);
+
+    cache1.clear();
   });
+
+  it("should call a listener only once in case of setAll", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    let changeCounter = 0;
+    const handlerHandle = registerCacheChangedHandler(() => {
+      changeCounter += 1;
+    });
+
+    cache1.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 1",
+        alternateKeys: "myAltKey1",
+      },
+      {
+        key: "key2",
+        value: "value2 of type 1",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+    expect(changeCounter).toEqual(1);
+
+    handlerHandle.unregister();
+    cache1.clear();
+  });
+
+  it("should create correct change events for set", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    let changeObject = null;
+    const handlerHandle = registerCacheChangedHandler(changes => {
+      changeObject = changes;
+    });
+
+    cache1.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 1",
+        alternateKeys: "myAltKey1",
+      },
+      {
+        key: "key2",
+        value: "value2 of type 1",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+    expect(changeObject.valueTypes.has(VALUE_TYPE_1)).toBeTruthy();
+    expect(changeObject[VALUE_TYPE_1].deleteRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].clearRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].lruRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].inserts.length).toEqual(2);
+    expect(changeObject[VALUE_TYPE_1].inserts[0].key).toEqual("key1");
+    expect(changeObject[VALUE_TYPE_1].inserts[0].value).toEqual("value1 of type 1");
+    expect(changeObject[VALUE_TYPE_1].inserts[0].alternateKeys.has("myAltKey1")).toBeTruthy();
+
+    handlerHandle.unregister();
+    cache1.clear();
+  });
+
+  it("should create correct change events for delete", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    let changeObject = null;
+    const handlerHandle = registerCacheChangedHandler(changes => {
+      changeObject = changes;
+    });
+
+    cache1.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 1",
+        alternateKeys: "myAltKey1",
+      },
+      {
+        key: "key2",
+        value: "value2 of type 1",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+    cache1.delete("key1");
+    expect(changeObject.valueTypes.has(VALUE_TYPE_1)).toBeTruthy();
+    expect(changeObject[VALUE_TYPE_1].deleteRemoves.length).toEqual(1);
+    expect(changeObject[VALUE_TYPE_1].clearRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].lruRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].inserts.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].deleteRemoves[0].key).toEqual("key1");
+    expect(changeObject[VALUE_TYPE_1].deleteRemoves[0].value).toEqual("value1 of type 1");
+    expect(changeObject[VALUE_TYPE_1].deleteRemoves[0].alternateKeys.has("myAltKey1")).toBeTruthy();
+
+    handlerHandle.unregister();
+    cache1.clear();
+  });
+
+  it("should create correct change events for clear", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    let changeObject = null;
+    const handlerHandle = registerCacheChangedHandler(changes => {
+      changeObject = changes;
+    });
+
+    cache1.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 1",
+        alternateKeys: "myAltKey1",
+      },
+      {
+        key: "key2",
+        value: "value2 of type 1",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+    cache1.clear();
+    expect(changeObject.valueTypes.has(VALUE_TYPE_1)).toBeTruthy();
+    expect(changeObject[VALUE_TYPE_1].clearRemoves.length).toEqual(2);
+    expect(changeObject[VALUE_TYPE_1].deleteRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].lruRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].inserts.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].clearRemoves[0].key).toEqual("key1");
+    expect(changeObject[VALUE_TYPE_1].clearRemoves[0].value).toEqual("value1 of type 1");
+    expect(changeObject[VALUE_TYPE_1].clearRemoves[0].alternateKeys.has("myAltKey1")).toBeTruthy();
+
+    handlerHandle.unregister();
+    cache1.clear();
+  });
+
+  it("should create correct change events for LRU removes", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    cache1.setMaxSize(1);
+
+    let changeObject = null;
+    const handlerHandle = registerCacheChangedHandler(changes => {
+      changeObject = changes;
+    });
+
+    cache1.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 1",
+        alternateKeys: "myAltKey1",
+      },
+      {
+        key: "key2",
+        value: "value2 of type 1",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+    expect(changeObject.valueTypes.has(VALUE_TYPE_1)).toBeTruthy();
+    expect(changeObject[VALUE_TYPE_1].clearRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].deleteRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].lruRemoves.length).toEqual(1);
+    expect(changeObject[VALUE_TYPE_1].inserts.length).toEqual(2);
+    expect(changeObject[VALUE_TYPE_1].lruRemoves[0].key).toEqual("key1");
+    expect(changeObject[VALUE_TYPE_1].lruRemoves[0].value).toEqual("value1 of type 1");
+    expect(changeObject[VALUE_TYPE_1].lruRemoves[0].alternateKeys.has("myAltKey1")).toBeTruthy();
+    expect(changeObject[VALUE_TYPE_1].inserts[0].key).toEqual("key1");
+    expect(changeObject[VALUE_TYPE_1].inserts[0].value).toEqual("value1 of type 1");
+    expect(changeObject[VALUE_TYPE_1].inserts[0].alternateKeys.has("myAltKey1")).toBeTruthy();
+    expect(changeObject[VALUE_TYPE_1].inserts[1].key).toEqual("key2");
+    expect(changeObject[VALUE_TYPE_1].inserts[1].value).toEqual("value2 of type 1");
+    expect(changeObject[VALUE_TYPE_1].inserts[1].alternateKeys.has("myAltKey2")).toBeTruthy();
+
+    cache1.setMaxSize(DEFAULT_CACHE_SIZE);
+    handlerHandle.unregister();
+    cache1.clear();
+  });
+
 });

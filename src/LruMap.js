@@ -140,11 +140,25 @@ export function LruMap(maxSize = null) {
     return removals.length === 1 ? removals[0] : null;
   };
 
-  /** Return value for key (undefined if not exists)
+  /** Return value for key (undefined if not exists).
+   *  Makes the entry the last recently used
    * @param {string} key - The entry key
    * @return {object} The corresponding value or undefined
    */
   self.get = key => {
+    const entry = keyToEntry.get(key);
+    if (typeof entry === "undefined") {
+      return entry;
+    }
+    makeNewest(entry, entryList);
+    return entry.value;
+  };
+
+  /** Like 'get', but not making the corresponding entry the last recently used.
+   * @param {string} key - The entry key
+   * @return {object} The corresponding value or undefined
+   */
+  self.getWithoutLruChange = key => {
     const entry = keyToEntry.get(key);
     if (typeof entry === "undefined") {
       return entry;

@@ -144,6 +144,17 @@ describe("LruMap", () => {
     expect(keys.length).toEqual(size2);
     expect(keys[0]).toEqual("key5");
     expect(keys[1]).toEqual("key4");
+
+    lruMap.get("key5");
+    keys = lruMap.map((value, key) => key);
+    expect(keys[0]).toEqual("key4");
+    expect(keys[1]).toEqual("key5");
+
+    lruMap.getWithoutLruChange("key4");
+    keys = lruMap.map((value, key) => key);
+    expect(keys[0]).toEqual("key4");
+    expect(keys[1]).toEqual("key5");
   });
+
 
 });
