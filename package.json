@@ -1,6 +1,6 @@
 {
   "name": "@swife/lru-cache",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "LRU cache with event registry to handle cache changes",
   "author": "Gerd Neudert",
   "license": "MIT",
