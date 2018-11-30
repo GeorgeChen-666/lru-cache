@@ -188,42 +188,37 @@ const asyncWrap = syncFunction => (...args) => new Promise((resolve, reject) => 
   }, 0);
 });
 
-const setAll = (valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys) => {
-  if (!Array.isArray(keyValueArray)) {
-    throw new Error("LruCache::setAll: argument.keyValueArray must be an array");
+const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray) => {
+  if (!Array.isArray(keyValueAlternateKeysArray)) {
+    throw new Error("LruCache::setAll: keyValueAlternateKeysArray must be an array");
   }
   cacheTransaction(() => {
-    keyValueArray.forEach(pair => {
-      const key = pair.key;
-      const value = pair.value;
+    keyValueAlternateKeysArray.forEach(({key, value, alternateKeys}) => {
       let entry = lruMap.get(key);
-      let alternateKeys = [];
-      if (keyToAlternateKeys !== null && keyToAlternateKeys.has(key)) {
-        alternateKeys = keyToAlternateKeys.get(key);
-        if (!Array.isArray(alternateKeys)) {
-          alternateKeys = alternateKeys ? [alternateKeys] : [];
-        }
-        alternateKeys.forEach(altKey => {
-          if (alternateKeyToKey.has(altKey) && alternateKeyToKey.get(altKey) !== key) {
-            throw new Error("LruCache::setAll: alternate key '" + altKey + "' is given for key '" + key + "' and value type '" + valueType + "' but is already used for key '" + alternateKeyToKey.get(altKey) + "'");
-          }
-        });
+      let altKeys = Array.isArray(alternateKeys) ? alternateKeys : [];
+      if (altKeys.length === 0 && typeof alternateKeys === "string") {
+        altKeys = [alternateKeys];
       }
-      alternateKeys = new Set(alternateKeys);
+      altKeys.forEach(altKey => {
+        if (alternateKeyToKey.has(altKey) && alternateKeyToKey.get(altKey) !== key) {
+          throw new Error("LruCache::setAll: alternate key '" + altKey + "' is given for key '" + key + "' and value type '" + valueType + "' but is already used for key '" + alternateKeyToKey.get(altKey) + "'");
+        }
+      });
+      altKeys = new Set(altKeys);
       if (typeof entry === "undefined") {
         entry = {
           key,
           value,
-          alternateKeys,
+          alternateKeys: altKeys,
         };
         lruMap.set(key, entry);
       }
       else {
         entry.value = value;
-        entry.alternateKeys = new Set([...entry.alternateKeys, ...alternateKeys]);
+        entry.alternateKeys = new Set([...entry.alternateKeys, ...altKeys]);
       }
       const removed = lruMap.set(key, entry);
-      alternateKeys.forEach(altKey => {
+      altKeys.forEach(altKey => {
         alternateKeyToKey.set(altKey, key);
       });
       handleInsert(valueType, {entry});
@@ -261,11 +256,11 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    *  If an inserts lead to cache max size being exceeded, the changed event will contain both, inserts and removes.
    * @memberof LruCache
    * @function
-   * @param {object} - object with 'keyValueArray' and optional 'keyToAlternateKeys'
+   * @param {Array} keyValueAlternateKeysArray - array of objects with 'key', 'value' and optional 'alternateKeys'
    * @returns {undefined} void
    */
-  self.setAll = ({keyValueArray, keyToAlternateKeys = null}) => {
-    setAll(valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys);
+  self.setAll = keyValueAlternateKeysArray => {
+    setAll(valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray);
   };
 
   /** Like 'setAll', but returning a Promise that is executed in another event loop.
@@ -280,23 +275,11 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    *  If an insert leads to cache max size being exceeded, the cached change event will contain both, insert and remove.
    * @memberof LruCache
    * @function
-   * @param {object} - object with 'key' and 'value' and optional 'alternateKeys'
+   * @param {object} keyValueAlternateKeys - object with 'key' and 'value' and optional 'alternateKeys'
    * @returns {undefined} void
    */
-  self.set = ({key, value, alternateKeys = null}) => {
-    if (alternateKeys === null) {
-      self.setAll({
-        keyValueArray: [{key, value}],
-      });
-    }
-    else {
-      const keyToAlternateKeys = new Map();
-      keyToAlternateKeys.set(key, alternateKeys);
-      self.setAll({
-        keyValueArray: [{key, value}],
-        keyToAlternateKeys,
-      });
-    }
+  self.set = keyValueAlternateKeys => {
+    self.setAll([keyValueAlternateKeys]);
   };
 
   /** Like 'set', but returning a Promise that is executed in another event loop.

@@ -16,7 +16,7 @@ npm install --save @swife/lru-cache
 ### Caching
 ```javascript
 import {getCache} from "@swife/lru-cache";
-// If you prefer the old-fashioned way:
+// If you use in nodejs and prefer the old-fashioned way:
 // var getCache = require("@swife/lru-cache").getCache;
 
 ...
