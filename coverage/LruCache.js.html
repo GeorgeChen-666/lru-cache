@@ -1,0 +1,1457 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for LruCache.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="prettify.css" />
+    <link rel="stylesheet" href="base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="index.html">All files</a> LruCache.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">70.33% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>128/182</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">58.33% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>35/60</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">57.78% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>26/45</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">71.59% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>126/176</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line medium'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import {LruMap} from "./LruMap";
+&nbsp;
+/** @namespace @swife/lru-cache */
+&nbsp;
+const DEFAULT_MAX_SIZE = 500;
+&nbsp;
+let nextHandlerKey = 0;
+const keyToChangedHandler = new Map();
+&nbsp;
+&nbsp;
+/**
+ * Register a handler that is called when value(s) get updated/inserted/removed in/to/from a cache.
+ * If the cache has already exceeded its maxSize, there is no way to know if a cache.set (or setAll) is an insert or
+ * an update (because JS does not yet provide weak references), so an insert event can be insert or update.
+ * The returned handle can be used to unregister the handler, or to deactivate/activate it (initial state is active).
+ * @memberof @swife/lru-cache
+ * @function
+ * @param {function} changedHandler - A function that will be called with an object parameter of the following shape
+ *                   {
+ *                     valueTypes: Set(),
+ *                     &lt;valueType&gt;: {
+ *                       inserts: [{key, value, alternateKeys}],
+ *                       removes: [{key, value, alternateKeys, isLruRemove, isClear}]
+ *                     },
+ *                     ...
+ *                   }
+ * @param {string} valueTypes - An array specifying the cache value types the handler should be called for (default: null)
+ *                 If null, it will be called for all object types
+ *                 If not null and a bulk (transactional) change has multiple valueTypes of which only some are of
+ *                 interest for the handler, then also the other types will be part of the argument (all or nothing)
+ * @return {object} handlerHandle - An object with methods unregister, activate, deactivate and isRegistered and with fields isActive, valueType and changedHandler
+ */
+export const registerCacheChangedHandler = (changedHandler, valueTypes = null) =&gt; {
+  const key = nextHandlerKey;
+  nextHandlerKey += 1;
+  const handler = {
+    changedHandler,
+    valueTypes,
+    isActive: true,
+    unregister: <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >      keyToChangedHandler.delete(key);</span>
+    },
+  };
+  handler.activate = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >    handler.isActive = true;</span>
+  };
+  handler.deactivate = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >    handler.isActive = false;</span>
+  };
+  handler.isRegistered = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >keyToChangedHandler.has(key);</span>
+  keyToChangedHandler.set(key, handler);
+  return handler;
+};
+&nbsp;
+&nbsp;
+const handleTransactionChangeObject = changeObject =&gt; {
+  const errors = [];
+  let handled = 0;
+  keyToChangedHandler.forEach(handler =&gt; {
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (handler.isActive) {
+      let doCall = handler.valueTypes === null;
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (!doCall) {
+<span class="cstat-no" title="statement not covered" >        for (let i = 0; i &lt; handler.valueTypes.length; ++i) {</span>
+<span class="cstat-no" title="statement not covered" >          if (changeObject.valueTypes.has(handler.valueTypes[i])) {</span>
+<span class="cstat-no" title="statement not covered" >            doCall = true;</span>
+<span class="cstat-no" title="statement not covered" >            break;</span>
+          }
+        }
+      }
+      <span class="missing-if-branch" title="else path not taken" >E</span>if (doCall) {
+        try {
+          handler.changedHandler(changeObject);
+        }
+        catch(error) {
+<span class="cstat-no" title="statement not covered" >          errors.push(error);</span>
+        }
+        finally {
+          handled += 1;
+        }
+      }
+    }
+  });
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (errors.length &gt; 0) {
+    let message = <span class="cstat-no" title="statement not covered" >"handleTransactionChangeObject: " + String(errors.length) + " of " + String(handled) + " handlers threw an error: ";</span>
+<span class="cstat-no" title="statement not covered" >    errors.forEach(<span class="fstat-no" title="function not covered" >er</span>ror =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      message += error.message + ", ";</span>
+    });
+<span class="cstat-no" title="statement not covered" >    throw new Error(message);</span>
+  }
+};
+&nbsp;
+&nbsp;
+let transactionChangeObject = null;
+let batchedCallbacksOrPromises = [];
+&nbsp;
+const cacheTransactionRecursive = callbackOrPromise =&gt; {
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof callbackOrPromise.finally === "function") {
+<span class="cstat-no" title="statement not covered" >    callbackOrPromise.finally(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+      const next = <span class="cstat-no" title="statement not covered" >batchedCallbacksOrPromises.shift();</span>
+<span class="cstat-no" title="statement not covered" >      if (typeof next === "undefined") {</span>
+<span class="cstat-no" title="statement not covered" >        try {</span>
+<span class="cstat-no" title="statement not covered" >          handleTransactionChangeObject(transactionChangeObject);</span>
+        }
+        finally {
+<span class="cstat-no" title="statement not covered" >          transactionChangeObject = null;</span>
+        }
+      }
+      else {
+<span class="cstat-no" title="statement not covered" >        cacheTransactionRecursive(next);</span>
+      }
+    });
+  }
+  else {
+    try {
+      callbackOrPromise();
+    }
+    finally {
+      try {
+        handleTransactionChangeObject(transactionChangeObject);
+      }
+      finally {
+        transactionChangeObject = null;
+      }
+    }
+  }
+};
+&nbsp;
+&nbsp;
+/** Pass a callback or a promise. All cache changes happening inside the callback or promise will be batched into a single
+ *  change object that will be dispatched to handlers after the callback/promise has finished. If this is called while there
+ *  is already another transaction in progress, the two transactions will just be batched together.
+ * @memberof @swife/lru-cache
+ * @function
+ * @param {function | Promise} callbackOrPromise - callback or promise to be executed within the transaction
+ * @return {undefined} void
+ */
+export const cacheTransaction = callbackOrPromise =&gt; {
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (transactionChangeObject !== null) {
+    // There is already a transaction in progress, so we will just batch this one together with the one being in progress:
+<span class="cstat-no" title="statement not covered" >    batchedCallbacksOrPromises.push(callbackOrPromise);</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+  transactionChangeObject = {
+    valueTypes: new Set(),
+  };
+  cacheTransactionRecursive(callbackOrPromise);
+};
+&nbsp;
+&nbsp;
+const handleChange = (valueType, keyValueAlternateKeysIsLruRemove, fieldNameAdd, fieldNameUnchanged) =&gt; {
+  let changeObject = transactionChangeObject;
+  const batchChanges = changeObject !== null;
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (changeObject === null) {
+<span class="cstat-no" title="statement not covered" >    changeObject = {</span>
+      valueTypes: new Set(),
+    };
+  }
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (changeObject.valueTypes.has(valueType)) {
+<span class="cstat-no" title="statement not covered" >    changeObject[fieldNameAdd].push(keyValueAlternateKeysIsLruRemove);</span>
+  }
+  else {
+    changeObject.valueTypes.add(valueType);
+    changeObject[fieldNameAdd] = [keyValueAlternateKeysIsLruRemove];
+    changeObject[fieldNameUnchanged] = [];
+  }
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (!batchChanges) {
+<span class="cstat-no" title="statement not covered" >    handleTransactionChangeObject(changeObject);</span>
+  }
+};
+&nbsp;
+const handleInsert = (valueType, keyValueAlternateKeys) =&gt; {
+  handleChange(valueType, keyValueAlternateKeys, "inserts", "removes");
+};
+&nbsp;
+const handleRemove = (valueType, keyValueAlternateKeysIsLruRemove) =&gt; {
+  handleChange(valueType, keyValueAlternateKeysIsLruRemove, "removes", "inserts");
+};
+&nbsp;
+const asyncWrap = syncFunction =&gt; (...args) =&gt; new Promise((resolve, reject) =&gt; {
+  setTimeout(() =&gt; {
+    try {
+      const result = syncFunction(...args);
+      resolve(result);
+    }
+    catch (e) {
+<span class="cstat-no" title="statement not covered" >      reject(e);</span>
+    }
+  }, 0);
+});
+&nbsp;
+const setAll = (valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys) =&gt; {
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (!Array.isArray(keyValueArray)) {
+<span class="cstat-no" title="statement not covered" >    throw new Error("LruCache::setAll: argument.keyValueArray must be an array");</span>
+  }
+  cacheTransaction(() =&gt; {
+    keyValueArray.forEach(pair =&gt; {
+      const key = pair.key;
+      const value = pair.value;
+      let entry = lruMap.get(key);
+      let alternateKeys = [];
+      if (keyToAlternateKeys !== null &amp;&amp; keyToAlternateKeys.has(key)) {
+        alternateKeys = keyToAlternateKeys.get(key);
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (!Array.isArray(alternateKeys)) {
+<span class="cstat-no" title="statement not covered" >          alternateKeys = alternateKeys ? [alternateKeys] : [];</span>
+        }
+        alternateKeys.forEach(altKey =&gt; {
+          <span class="missing-if-branch" title="if path not taken" >I</span>if (alternateKeyToKey.has(altKey) &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >alternateKeyToKey.get(altKey) !== key)</span> {
+<span class="cstat-no" title="statement not covered" >            throw new Error("LruCache::setAll: alternate key '" + altKey + "' is given for key '" + key + "' and value type '" + valueType + "' but is already used for key '" + alternateKeyToKey.get(altKey) + "'");</span>
+          }
+        });
+      }
+      alternateKeys = new Set(alternateKeys);
+      if (typeof entry === "undefined") {
+        entry = {
+          key,
+          value,
+          alternateKeys,
+        };
+        lruMap.set(key, entry);
+      }
+      else {
+        entry.value = value;
+        entry.alternateKeys = new Set([...entry.alternateKeys, ...alternateKeys]);
+      }
+      const removed = lruMap.set(key, entry);
+      alternateKeys.forEach(altKey =&gt; {
+        alternateKeyToKey.set(altKey, key);
+      });
+      handleInsert(valueType, {entry});
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (removed !== null) {
+<span class="cstat-no" title="statement not covered" >        removed.value.alternateKeys.forEach(<span class="fstat-no" title="function not covered" >al</span>tKey =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >          alternateKeyToKey.delete(altKey);</span>
+        });
+<span class="cstat-no" title="statement not covered" >        handleRemove(valueType, {...entry, isLruRemove: true, isClear: false});</span>
+      }
+    });
+  });
+};
+&nbsp;
+const entryGetter = (key, alternateKeyToKey, lruMap) =&gt; {
+  let entry = lruMap.get(key);
+  if (typeof entry === "undefined" &amp;&amp; alternateKeyToKey.has(key)) {
+    entry = lruMap.get(alternateKeyToKey.get(key));
+  }
+  return entry;
+};
+&nbsp;
+/** Cannot be instantiated directly. Use 'getCache' to get a cache instance.
+ * @class LruCache
+ * @param {string} valueType - The value type of this cache
+ * @param {maxSize} maxSize - The maximum number of entries for the given value type (default: 500)
+ */
+function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
+  const self = this instanceof LruCache ? <span class="branch-0 cbranch-no" title="branch not covered" >this </span>: Object.create(LruCache.prototype);
+  const lruMap = LruMap(maxSize);
+  const alternateKeyToKey = new Map();
+&nbsp;
+  /** Insert or update multiple cache entries.
+   *  If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
+   *  A corresponding cache changed event will be dispatched.
+   *  If an inserts lead to cache max size being exceeded, the changed event will contain both, inserts and removes.
+   * @memberof LruCache
+   * @function
+   * @param {object} - object with 'keyValueArray' and optional 'keyToAlternateKeys'
+   * @returns {undefined} void
+   */
+  self.setAll = ({keyValueArray, keyToAlternateKeys = null}) =&gt; {
+    setAll(valueType, lruMap, alternateKeyToKey, keyValueArray, keyToAlternateKeys);
+  };
+&nbsp;
+  /** Like 'setAll', but returning a Promise that is executed in another event loop.
+   * @memberof LruCache
+   * @function
+   */
+  self.setAllAsync = asyncWrap(self.setAll);
+&nbsp;
+  /** Insert or update a cache entry.
+   *  If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
+   *  A corresponding cache changed event will be dispatched.
+   *  If an insert leads to cache max size being exceeded, the cached change event will contain both, insert and remove.
+   * @memberof LruCache
+   * @function
+   * @param {object} - object with 'key' and 'value' and optional 'alternateKeys'
+   * @returns {undefined} void
+   */
+  self.set = ({key, value, alternateKeys = null}) =&gt; {
+    if (alternateKeys === null) {
+      self.setAll({
+        keyValueArray: [{key, value}],
+      });
+    }
+    else {
+      const keyToAlternateKeys = new Map();
+      keyToAlternateKeys.set(key, alternateKeys);
+      self.setAll({
+        keyValueArray: [{key, value}],
+        keyToAlternateKeys,
+      });
+    }
+  };
+&nbsp;
+  /** Like 'set', but returning a Promise that is executed in another event loop.
+   * @memberof LruCache
+   * @function
+   */
+  self.setAsync = asyncWrap(self.set);
+&nbsp;
+  /** Get value from cache by either its key or one of its alternate keys (if exists).
+   *  Returns undefined, if not in cache.
+   *  Makes the corresponding entry the last recently used (use 'getWithoutLruChange' to avoid this).
+   * @memberof LruCache
+   * @function
+   * @param {string} keyOrAlternateKey - The key or alternate key of the value
+   * @returns {object | undefined} object, if the key is in cache, else undefined
+   */
+  self.get = keyOrAlternateKey =&gt; {
+    let entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);
+    if (typeof entry === "undefined") {
+      return entry;
+    }
+    lruMap.set(entry.key, entry); // to make it the newest (last recent used)
+    return entry.value;
+  };
+&nbsp;
+  /** Like 'get', but not making the corresponding entry the last recently used.
+   * @memberof LruCache
+   * @function
+   * @param {string} keyOrAlternateKey - The key or alternate key of the value
+   * @returns {object | undefined} object, if the key is in cache, else undefined
+   */
+  self.getWithoutLruChange = <span class="fstat-no" title="function not covered" >ke</span>yOrAlternateKey =&gt; {
+    let entry = <span class="cstat-no" title="statement not covered" >entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);</span>
+<span class="cstat-no" title="statement not covered" >    if (typeof entry === "undefined") {</span>
+<span class="cstat-no" title="statement not covered" >      return entry;</span>
+    }
+<span class="cstat-no" title="statement not covered" >    return entry.value;</span>
+  };
+&nbsp;
+  /** Delete entry from cache by key or alternate key.
+   *  A corresponding cache changed event will be dispatched.
+   * @memberof LruCache
+   * @function
+   * @param {string} keyOrAlternateKey - The key or alternate key of the to be deleted value
+   * @returns {boolean} true, if the key was in the cache.
+   */
+  self.delete = <span class="fstat-no" title="function not covered" >ke</span>yOrAlternateKey =&gt; {
+    const entry = <span class="cstat-no" title="statement not covered" >entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap);</span>
+<span class="cstat-no" title="statement not covered" >    if (typeof entry === "undefined") {</span>
+<span class="cstat-no" title="statement not covered" >      return false;</span>
+    }
+<span class="cstat-no" title="statement not covered" >    lruMap.delete(entry.key);</span>
+<span class="cstat-no" title="statement not covered" >    entry.alternateKeys.forEach(<span class="fstat-no" title="function not covered" >al</span>tKey =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      alternateKeyToKey.delete(altKey);</span>
+    });
+<span class="cstat-no" title="statement not covered" >    handleRemove(valueType, {...entry, isLruRemove: false, isClear: false});</span>
+<span class="cstat-no" title="statement not covered" >    return true;</span>
+  };
+&nbsp;
+  /** Iterate over the cache from oldest to newest entry.
+   *  The given callback gets a cache entry as argument (an object with 'key', 'value' and 'alternateKeys').
+   * @memberof LruCache
+   * @function
+   */
+  self.forEach = lruMap.forEach;
+&nbsp;
+  /** Get an Array with all cache entries.
+   * @memberof LruCache
+   * @function
+   * @returns {Array} cache entries (objects with 'key', 'value' and 'alternateKeys')
+   */
+  self.getEntries = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >lruMap.map(<span class="fstat-no" title="function not covered" >en</span>try =&gt; <span class="cstat-no" title="statement not covered" >entry)</span>;</span>
+&nbsp;
+  /** Clear the cache.
+   *  A corresponding cache changed event will be dispatched.
+   * @memberof LruCache
+   * @function
+   * @returns {undefined} void
+   */
+  self.clear = () =&gt; {
+    const keyValueArray = lruMap.clear();
+    alternateKeyToKey.clear();
+    keyValueArray.forEach(keyValuePair =&gt; {
+      cacheTransaction(() =&gt; {
+        handleRemove(valueType, {...keyValuePair.value, isLruRemove: false, isClear: true});
+      });
+    });
+  };
+&nbsp;
+  /** Get the number of currently cached objects.
+   * @memberof LruCache
+   * @function
+   * @returns {int} current number of entries in this cache
+   */
+  self.getSize = lruMap.getSize();
+&nbsp;
+  /** Get the value type of this cache.
+   * @memberof LruCache
+   * @function
+   * @return {string} the value type
+   */
+  self.getValueType = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >valueType;</span>
+&nbsp;
+  /** Return the current max size of this cache.
+   * @memberof LruCache
+   * @function
+   * @returns {int} max size of this cache
+   */
+  self.getMaxSize = lruMap.getMaxSize();
+&nbsp;
+  /** Set a new max size for this cache.
+   *  If this leads to the removal of cache entries, a corresponding cache changed event will be dispatched.
+   * @memberof LruCache
+   * @function
+   * @param {int} newMaxSize - the new max number of entries for this cache.
+   * @returns {undefined} void
+   */
+  self.setMaxSize = <span class="fstat-no" title="function not covered" >ne</span>wMaxSize =&gt; {
+    const keyValueArray = <span class="cstat-no" title="statement not covered" >lruMap.setMaxSize(newMaxSize);</span>
+<span class="cstat-no" title="statement not covered" >    keyValueArray.forEach(<span class="fstat-no" title="function not covered" >ke</span>yValuePair =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      cacheTransaction(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        handleRemove(valueType, {...keyValuePair.value, isLruRemove: true, isClear: false});</span>
+      });
+    });
+  };
+&nbsp;
+  return self;
+}
+&nbsp;
+&nbsp;
+const valueTypeToCache = new Map();
+&nbsp;
+&nbsp;
+/**
+ * Get a LruCache for the given valueType.
+ * If a cache for this type already exists, the existing cache instance will be returned (LruCache is a singleton per value type).
+ * @memberof @swife/lru-cache
+ * @function
+ * @param {string} valueType - The type of object being cached.
+ * @returns {LruCache} - A lru-cache object.
+ * @see LruCache
+ */
+export const getCache = valueType =&gt; {
+  let lruCache = valueTypeToCache.get(valueType);
+  if (typeof lruCache === "undefined") {
+    lruCache = LruCache(valueType);
+    valueTypeToCache.set(valueType, lruCache);
+  }
+  return lruCache;
+};
+&nbsp;
+/**
+ * Clear (invalidate) all existing caches.
+ * Will dispatch a single change event with all changes batched together.
+ * @memberof @swife/lru-cache
+ * @function
+ * @returns {void}
+ */
+export const clearAllCaches = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >  cacheTransaction(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    valueTypeToCache.forEach(<span class="fstat-no" title="function not covered" >ca</span>che =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      cache.clear();</span>
+    });
+  });
+};
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Fri Nov 30 2018 01:46:06 GMT+0100 (Central European Standard Time)
+</div>
+</div>
+<script src="prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="sorter.js"></script>
+</body>
+</html>
