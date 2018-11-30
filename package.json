@@ -1,5 +1,5 @@
 {
-  "name": "@swife/lru-cache",
+  "name": "@swarmy/lru-cache",
   "version": "1.0.0",
   "description": "LRU cache with event registry to handle cache changes",
   "author": "Gerd Neudert",

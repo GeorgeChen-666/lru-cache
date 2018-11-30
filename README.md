@@ -6,16 +6,16 @@ A Javascript LRU-cache for node and/or browser, featuring:
 
 ## Installation
 ```javascript
-npm install --save @swife/lru-cache
+npm install --save @swarmy/lru-cache
 ```
 
 ## Basic Usage
 
 ### Caching
 ```javascript
-import {getCache} from "@swife/lru-cache";
+import {getCache} from "@swarmy/lru-cache";
 // If you use in nodejs and prefer the old-fashioned way:
-// var getCache = require("@swife/lru-cache").getCache;
+// var getCache = require("@swarmy/lru-cache").getCache;
 
 ...
 const userCache = getCache("User");

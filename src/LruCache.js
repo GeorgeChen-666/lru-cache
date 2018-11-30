@@ -1,6 +1,6 @@
 import {LruMap} from "./LruMap";
 
-/** @namespace @swife/lru-cache */
+/** @namespace @swarmy/lru-cache */
 
 const DEFAULT_MAX_SIZE = 500;
 
@@ -13,7 +13,7 @@ const keyToChangedHandler = new Map();
  * If the cache has already exceeded its maxSize, there is no way to know if a cache.set (or setAll) is an insert or
  * an update (because JS does not yet provide weak references), so an insert event can be insert or update.
  * The returned handle can be used to unregister the handler, or to deactivate/activate it (initial state is active).
- * @memberof @swife/lru-cache
+ * @memberof @swarmy/lru-cache
  * @function
  * @param {function} changedHandler - A function that will be called with an object parameter of the following shape:
  *                   {
@@ -135,7 +135,7 @@ const cacheTransactionIntern = callbackOrPromise => {
 /** Pass a callback or a promise. All cache changes happening inside the callback or promise will be batched into a single
  *  change object that will be dispatched to handlers after the callback/promise has finished. If this is called while there
  *  is already another transaction in progress, the two transactions will just be batched together.
- * @memberof @swife/lru-cache
+ * @memberof @swarmy/lru-cache
  * @function
  * @param {function | Promise} callbackOrPromise - callback or promise to be executed within the transaction
  * @return {undefined} void
@@ -433,7 +433,7 @@ const valueTypeToCache = new Map();
 /**
  * Get a LruCache for the given valueType.
  * If a cache for this type already exists, the existing cache instance will be returned (LruCache is a singleton per value type).
- * @memberof @swife/lru-cache
+ * @memberof @swarmy/lru-cache
  * @function
  * @param {string} valueType - The type of object being cached.
  * @returns {LruCache} - A lru-cache object.
@@ -451,7 +451,7 @@ export const getCache = valueType => {
 /**
  * Clear (invalidate) all existing caches.
  * Will dispatch a single change event with all changes batched together.
- * @memberof @swife/lru-cache
+ * @memberof @swarmy/lru-cache
  * @function
  * @returns {void}
  */
