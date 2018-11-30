@@ -9,7 +9,7 @@ const VALUE_TYPE_1 = "valueType1";
 const VALUE_TYPE_2 = "valueType2";
 const DEFAULT_CACHE_SIZE = 500;
 
-
+/*
 describe("LruCache", () => {
   it("should provide a 'set' method for a key/value pair and a 'get' method to retrieve by key", () => {
     const cache1 = getCache(VALUE_TYPE_1);
@@ -520,4 +520,162 @@ describe("registerCacheChangedHandler", () => {
     cache1.clear();
   });
 
+  it("should create correct change events if setMaxSize leads to LRU removes", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    let changeObject = null;
+    const handlerHandle = registerCacheChangedHandler(changes => {
+      changeObject = changes;
+    });
+
+    cache1.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 1",
+        alternateKeys: "myAltKey1",
+      },
+      {
+        key: "key2",
+        value: "value2 of type 1",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+
+    cache1.setMaxSize(1);
+
+    expect(changeObject.valueTypes.has(VALUE_TYPE_1)).toBeTruthy();
+    expect(changeObject[VALUE_TYPE_1].clearRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].deleteRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].lruRemoves.length).toEqual(1);
+    expect(changeObject[VALUE_TYPE_1].inserts.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].lruRemoves[0].key).toEqual("key1");
+    expect(changeObject[VALUE_TYPE_1].lruRemoves[0].value).toEqual("value1 of type 1");
+    expect(changeObject[VALUE_TYPE_1].lruRemoves[0].alternateKeys.has("myAltKey1")).toBeTruthy();
+
+    cache1.setMaxSize(DEFAULT_CACHE_SIZE);
+    handlerHandle.unregister();
+    cache1.clear();
+  });
+
+  it("should only listen to events of the given value types", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+    const cache2 = getCache(VALUE_TYPE_2);
+
+    let changeCounter = 0;
+    const handlerHandle = registerCacheChangedHandler(() => {
+      changeCounter += 1;
+    }, [VALUE_TYPE_2]);
+
+    cache1.set({
+      key: "key1",
+      value: "value1 of type 1",
+    });
+    expect(changeCounter).toEqual(0);
+
+    cache2.set({
+      key: "key1",
+      value: "value1 of type 2",
+    });
+    expect(changeCounter).toEqual(1);
+
+    handlerHandle.unregister();
+    cache1.clear();
+    cache2.clear();
+  });
+
+});
+*/
+
+describe("cacheTransaction", () => {
+  it("should batch change events inside a cache transaction into a single change event being dispatched", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+    const cache2 = getCache(VALUE_TYPE_2);
+
+    cache1.setMaxSize(2);
+
+    let changeObject = null;
+    const handlerHandle = registerCacheChangedHandler(changes => {
+      changeObject = changes;
+    }, [VALUE_TYPE_2]);
+
+    cacheTransaction(() => {
+      cache1.setAll([
+        {
+          key: "key1", // order 0
+          value: "value1 of type 1",
+          alternateKeys: "myAltKey1",
+        },
+        {
+          key: "key2", // order 1
+          value: "value2 of type 1",
+          alternateKeys: "myAltKey2",
+        },
+      ]); // 2 inserts
+      expect(changeObject).toEqual(null);
+
+      cache1.set({
+        key: "key2", // order 2
+        value: "value2 of type 1 modified",
+      }); // 3 inserts (key2 in two versions)
+      expect(changeObject).toEqual(null);
+
+      cache1.forEach(entry => {
+        console.log("entry: ", entry);
+      });
+
+      cache1.set({
+        key: "key3", // order 3  => key1 lruRemove order 4
+        value: "value3 of type 1 modified",
+      }); // 4 inserts and 1 lruRemove
+      expect(changeObject).toEqual(null);
+
+      cache2.set({
+        key: "key1", // order 5
+        value: "value1 of type 2",
+      }); // VT1: 4 inserts and 1 lruRemove / VT2: 1 insert
+      expect(changeObject).toEqual(null);
+
+      cache1.delete("key2"); // order 6
+      // VT1: 4 inserts and 1 lruRemove and 1 deleteRemove / VT2: 1 insert
+      expect(changeObject).toEqual(null);
+
+      cache2.clear(); // order 7
+      // VT1: 4 inserts and 1 lruRemove and 1 deleteRemove / VT2: 1 insert and 1 clearRemove
+      expect(changeObject).toEqual(null);
+    });
+
+    console.log("changeObject: ", changeObject);
+    console.log("inserts: ", changeObject[VALUE_TYPE_1].inserts);
+
+    expect(changeObject.valueTypes.has(VALUE_TYPE_1)).toBeTruthy();
+    expect(changeObject.valueTypes.has(VALUE_TYPE_2)).toBeTruthy();
+
+    expect(changeObject[VALUE_TYPE_1].clearRemoves.length).toEqual(0);
+    expect(changeObject[VALUE_TYPE_2].clearRemoves.length).toEqual(1);
+
+    expect(changeObject[VALUE_TYPE_1].deleteRemoves.length).toEqual(1);
+    expect(changeObject[VALUE_TYPE_2].deleteRemoves.length).toEqual(0);
+
+    expect(changeObject[VALUE_TYPE_1].lruRemoves.length).toEqual(1);
+    expect(changeObject[VALUE_TYPE_2].lruRemoves.length).toEqual(0);
+
+    expect(changeObject[VALUE_TYPE_1].inserts.length).toEqual(4);
+    expect(changeObject[VALUE_TYPE_2].inserts.length).toEqual(1);
+
+    expect(changeObject[VALUE_TYPE_1].inserts[0].order).toEqual(0);
+    expect(changeObject[VALUE_TYPE_1].inserts[1].order).toEqual(1);
+    expect(changeObject[VALUE_TYPE_1].inserts[2].order).toEqual(2);
+    expect(changeObject[VALUE_TYPE_1].inserts[3].order).toEqual(3);
+    expect(changeObject[VALUE_TYPE_1].lruRemoves[0].order).toEqual(4);
+    expect(changeObject[VALUE_TYPE_2].inserts[0].order).toEqual(5);
+    expect(changeObject[VALUE_TYPE_1].deleteRemoves[0].order).toEqual(6);
+    expect(changeObject[VALUE_TYPE_2].clearRemoves[0].order).toEqual(7);
+
+    expect(changeObject[VALUE_TYPE_1].inserts[1].value).toEqual("value2 of type 1");
+    expect(changeObject[VALUE_TYPE_1].inserts[2].order).toEqual("value2 of type 1 modified");
+
+    handlerHandle.unregister();
+    cache1.clear();
+    cache2.clear();
+  });
 });

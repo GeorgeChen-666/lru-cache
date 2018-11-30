@@ -97,7 +97,7 @@ export function LruMap(maxSize = null) {
    */
   self.setMaxSize = newMaxSize => {
     sizeLimit = newMaxSize;
-    if (sizeLimit === 0) {
+    if (sizeLimit < 1) {
       sizeLimit = null;
     }
     return shrinkToMaxSize(sizeLimit, entryList, keyToEntry);

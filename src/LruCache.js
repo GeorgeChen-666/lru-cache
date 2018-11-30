@@ -15,18 +15,20 @@ const keyToChangedHandler = new Map();
  * The returned handle can be used to unregister the handler, or to deactivate/activate it (initial state is active).
  * @memberof @swife/lru-cache
  * @function
- * @param {function} changedHandler - A function that will be called with an object parameter of the following shape
+ * @param {function} changedHandler - A function that will be called with an object parameter of the following shape:
  *                   {
  *                     valueTypes: Set(),
  *                     <valueType>: {
- *                       inserts: [{key, value, alternateKeys}],
- *                       clearRemoves: [{key, value, alternateKeys}],
- *                       lruRemoves: [{key, value, alternateKeys}],
- *                       deleteRemoves: [{key, value, alternateKeys}],
+ *                       inserts: [{key, value, alternateKeys, order}],
+ *                       clearRemoves: [{key, value, alternateKeys, order}],
+ *                       lruRemoves: [{key, value, alternateKeys, order}],
+ *                       deleteRemoves: [{key, value, alternateKeys, order}],
  *                     },
  *                     ...
  *                   }
- * @param {string} valueTypes - An array specifying the cache value types the handler should be called for (default: null)
+ *                   The order can be used to determine e.g. if an entry was first inserted and then deleted, or first
+ *                   deleted and then re-inserted (can happen in cache transactions).
+ * @param {Array} valueTypes - An array specifying the cache value types the handler should be called for (default: null)
  *                 If null, it will be called for all object types
  *                 If not null and a bulk (transactional) change has multiple valueTypes of which only some are of
  *                 interest for the handler, then also the other types will be part of the argument (all or nothing)
@@ -93,8 +95,8 @@ const handleTransactionChangeObject = changeObject => {
 
 
 let transactionChangeObject = null;
+let changeOrder = 0;
 let batchedCallbacksOrPromises = [];
-
 const cacheTransactionRecursive = callbackOrPromise => {
   if (typeof callbackOrPromise.finally === "function") {
     callbackOrPromise.finally(() => {
@@ -105,6 +107,7 @@ const cacheTransactionRecursive = callbackOrPromise => {
         }
         finally {
           transactionChangeObject = null;
+          changeOrder = 0;
         }
       }
       else {
@@ -117,11 +120,18 @@ const cacheTransactionRecursive = callbackOrPromise => {
       callbackOrPromise();
     }
     finally {
-      try {
-        handleTransactionChangeObject(transactionChangeObject);
+      const next = batchedCallbacksOrPromises.shift();
+      if (typeof next === "undefined") {
+        try {
+          handleTransactionChangeObject(transactionChangeObject);
+        }
+        finally {
+          transactionChangeObject = null;
+          changeOrder = 0;
+        }
       }
-      finally {
-        transactionChangeObject = null;
+      else {
+        cacheTransactionRecursive(next);
       }
     }
   }
@@ -149,7 +159,7 @@ export const cacheTransaction = callbackOrPromise => {
 };
 
 
-const handleChange = (valueType, keyValueAlternateKeysIsLruRemove, fieldNameAdd, fieldNamesUnchanged) => {
+const handleChange = (valueType, keyValueAlternateKeys, fieldNameAdd, fieldNamesUnchanged) => {
   let changeObject = transactionChangeObject;
   const batchChanges = changeObject !== null;
   if (changeObject === null) {
@@ -158,13 +168,17 @@ const handleChange = (valueType, keyValueAlternateKeysIsLruRemove, fieldNameAdd,
     };
   }
   if (changeObject.valueTypes.has(valueType)) {
-    changeObject[valueType][fieldNameAdd].push(keyValueAlternateKeysIsLruRemove);
+    // Copying the original entry is not just done to add the order, but is mandatory to get the value
+    // at the point of change and not the current cache value in the change event!
+    changeObject[valueType][fieldNameAdd].push({...keyValueAlternateKeys, order: changeOrder++});
+    //console.log("existing " + valueType + "::" + fieldNameAdd + ": ", changeObject[valueType][fieldNameAdd]);
   }
   else {
     changeObject.valueTypes.add(valueType);
     changeObject[valueType] = {
-      [fieldNameAdd]: [keyValueAlternateKeysIsLruRemove],
+      [fieldNameAdd]: [{...keyValueAlternateKeys, order: changeOrder++}],
     };
+    //console.log("new " + valueType + "::" + fieldNameAdd + ": ", changeObject[valueType][fieldNameAdd]);
     fieldNamesUnchanged.forEach(fieldName => {
       changeObject[valueType][fieldName] = [];
     })
@@ -178,16 +192,16 @@ const handleInsert = (valueType, keyValueAlternateKeys) => {
   handleChange(valueType, keyValueAlternateKeys, "inserts", ["clearRemoves", "lruRemoves", "deleteRemoves"]);
 };
 
-const handleClearRemove = (valueType, keyValueAlternateKeysIsLruRemove) => {
-  handleChange(valueType, keyValueAlternateKeysIsLruRemove, "clearRemoves", ["inserts", "lruRemoves", "deleteRemoves"]);
+const handleClearRemove = (valueType, keyValueAlternateKeys) => {
+  handleChange(valueType, keyValueAlternateKeys, "clearRemoves", ["inserts", "lruRemoves", "deleteRemoves"]);
 };
 
-const handleLruRemove = (valueType, keyValueAlternateKeysIsLruRemove) => {
-  handleChange(valueType, keyValueAlternateKeysIsLruRemove, "lruRemoves", ["clearRemoves", "inserts", "deleteRemoves"]);
+const handleLruRemove = (valueType, keyValueAlternateKeys) => {
+  handleChange(valueType, keyValueAlternateKeys, "lruRemoves", ["clearRemoves", "inserts", "deleteRemoves"]);
 };
 
-const handleDeleteRemove = (valueType, keyValueAlternateKeysIsLruRemove) => {
-  handleChange(valueType, keyValueAlternateKeysIsLruRemove, "deleteRemoves", ["clearRemoves", "lruRemoves", "inserts"]);
+const handleDeleteRemove = (valueType, keyValueAlternateKeys) => {
+  handleChange(valueType, keyValueAlternateKeys, "deleteRemoves", ["clearRemoves", "lruRemoves", "inserts"]);
 };
 
 const asyncWrap = syncFunction => (...args) => new Promise((resolve, reject) => {
@@ -246,7 +260,9 @@ const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray
 };
 
 const entryGetter = (key, alternateKeyToKey, getter) => {
+  console.log("get: ", key);
   let entry = getter(key);
+  console.log("got entry: ", entry);
   if (typeof entry === "undefined" && alternateKeyToKey.has(key)) {
     entry = getter(alternateKeyToKey.get(key));
   }
@@ -266,7 +282,8 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   /** Insert or update multiple cache entries.
    *  If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
    *  A corresponding cache changed event will be dispatched.
-   *  If an inserts lead to cache max size being exceeded, the changed event will contain both, inserts and removes.
+   *  If inserts lead to cache max size being exceeded, the changed event will contain both, inserts and removes.
+   *  It is even possible that an entry from the inserts is also contained in the removes.
    * @memberof LruCache
    * @function
    * @param {Array} keyValueAlternateKeysArray - array of objects with 'key', 'value' and optional 'alternateKeys'
@@ -335,7 +352,12 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @returns {boolean} true, if the key was in the cache.
    */
   self.delete = keyOrAlternateKey => {
+    console.log("inn delete");
+    lruMap.forEach((v, k) => {
+      console.log("lruMap: ", k);
+    });
     const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.getWithoutLruChange);
+    console.log("entry: ", entry);
     if (typeof entry === "undefined") {
       return false;
     }
@@ -343,7 +365,11 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     entry.alternateKeys.forEach(altKey => {
       alternateKeyToKey.delete(altKey);
     });
-    handleDeleteRemove(valueType, entry);
+    // It is important to warp even single actions into cacheTransaction to get consistent behavior,
+    // e.g. to always reset 'order', even after a delete
+    cacheTransaction(() => {
+      handleDeleteRemove(valueType, entry);
+    });
     return true;
   };
 
