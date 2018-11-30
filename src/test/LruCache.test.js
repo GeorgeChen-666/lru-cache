@@ -9,7 +9,7 @@ const VALUE_TYPE_1 = "valueType1";
 const VALUE_TYPE_2 = "valueType2";
 const DEFAULT_CACHE_SIZE = 500;
 
-/*
+
 describe("LruCache", () => {
   it("should provide a 'set' method for a key/value pair and a 'get' method to retrieve by key", () => {
     const cache1 = getCache(VALUE_TYPE_1);
@@ -584,7 +584,7 @@ describe("registerCacheChangedHandler", () => {
   });
 
 });
-*/
+
 
 describe("cacheTransaction", () => {
   it("should batch change events inside a cache transaction into a single change event being dispatched", () => {
@@ -619,10 +619,6 @@ describe("cacheTransaction", () => {
       }); // 3 inserts (key2 in two versions)
       expect(changeObject).toEqual(null);
 
-      cache1.forEach(entry => {
-        console.log("entry: ", entry);
-      });
-
       cache1.set({
         key: "key3", // order 3  => key1 lruRemove order 4
         value: "value3 of type 1 modified",
@@ -643,9 +639,6 @@ describe("cacheTransaction", () => {
       // VT1: 4 inserts and 1 lruRemove and 1 deleteRemove / VT2: 1 insert and 1 clearRemove
       expect(changeObject).toEqual(null);
     });
-
-    console.log("changeObject: ", changeObject);
-    console.log("inserts: ", changeObject[VALUE_TYPE_1].inserts);
 
     expect(changeObject.valueTypes.has(VALUE_TYPE_1)).toBeTruthy();
     expect(changeObject.valueTypes.has(VALUE_TYPE_2)).toBeTruthy();
@@ -672,10 +665,61 @@ describe("cacheTransaction", () => {
     expect(changeObject[VALUE_TYPE_2].clearRemoves[0].order).toEqual(7);
 
     expect(changeObject[VALUE_TYPE_1].inserts[1].value).toEqual("value2 of type 1");
-    expect(changeObject[VALUE_TYPE_1].inserts[2].order).toEqual("value2 of type 1 modified");
+    expect(changeObject[VALUE_TYPE_1].inserts[2].value).toEqual("value2 of type 1 modified");
+
+    changeObject = null;
+    cache1.set({
+      key: "key2", // order 2
+      value: "value2 of type 1 modified again",
+    });
+    expect(changeObject).toEqual(null); // handler listens only to VT2 changes involved
 
     handlerHandle.unregister();
     cache1.clear();
     cache2.clear();
+  });
+
+  it("should handle a promise instead of a callback", async () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    cache1.setMaxSize(2);
+
+    let changeObject = null;
+    const handlerHandle = registerCacheChangedHandler(changes => {
+      changeObject = changes;
+    }, [VALUE_TYPE_1]);
+
+    const promise = new Promise(resolve => {
+      setTimeout(() => {
+        cache1.setAll([
+          {
+            key: "key1", // order 0
+            value: "value1 of type 1",
+            alternateKeys: "myAltKey1",
+          },
+          {
+            key: "key2", // order 1
+            value: "value2 of type 1",
+            alternateKeys: "myAltKey2",
+          },
+        ]);
+        expect(changeObject).toEqual(null);
+
+        resolve();
+      }, 0)
+    });
+
+    cacheTransaction(promise);
+
+    expect(changeObject).toEqual(null);
+
+    await promise;
+
+    expect(changeObject.valueTypes.has(VALUE_TYPE_1)).toBeTruthy();
+
+    expect(changeObject[VALUE_TYPE_1].inserts.length).toEqual(2);
+
+    handlerHandle.unregister();
+    cache1.clear();
   });
 });

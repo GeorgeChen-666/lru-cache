@@ -96,12 +96,12 @@ const handleTransactionChangeObject = changeObject => {
 
 let transactionChangeObject = null;
 let changeOrder = 0;
-let batchedCallbacksOrPromises = [];
-const cacheTransactionRecursive = callbackOrPromise => {
+let runningTransactions = 0;
+const cacheTransactionIntern = callbackOrPromise => {
   if (typeof callbackOrPromise.finally === "function") {
     callbackOrPromise.finally(() => {
-      const next = batchedCallbacksOrPromises.shift();
-      if (typeof next === "undefined") {
+      runningTransactions -= 1;
+      if (runningTransactions === 0) {
         try {
           handleTransactionChangeObject(transactionChangeObject);
         }
@@ -109,9 +109,6 @@ const cacheTransactionRecursive = callbackOrPromise => {
           transactionChangeObject = null;
           changeOrder = 0;
         }
-      }
-      else {
-        cacheTransactionRecursive(next);
       }
     });
   }
@@ -120,8 +117,8 @@ const cacheTransactionRecursive = callbackOrPromise => {
       callbackOrPromise();
     }
     finally {
-      const next = batchedCallbacksOrPromises.shift();
-      if (typeof next === "undefined") {
+      runningTransactions -= 1;
+      if (runningTransactions === 0) {
         try {
           handleTransactionChangeObject(transactionChangeObject);
         }
@@ -129,9 +126,6 @@ const cacheTransactionRecursive = callbackOrPromise => {
           transactionChangeObject = null;
           changeOrder = 0;
         }
-      }
-      else {
-        cacheTransactionRecursive(next);
       }
     }
   }
@@ -147,15 +141,13 @@ const cacheTransactionRecursive = callbackOrPromise => {
  * @return {undefined} void
  */
 export const cacheTransaction = callbackOrPromise => {
-  if (transactionChangeObject !== null) {
-    // There is already a transaction in progress, so we will just batch this one together with the one being in progress:
-    batchedCallbacksOrPromises.push(callbackOrPromise);
-    return;
+  if (transactionChangeObject === null) {
+    transactionChangeObject = {
+      valueTypes: new Set(),
+    };
   }
-  transactionChangeObject = {
-    valueTypes: new Set(),
-  };
-  cacheTransactionRecursive(callbackOrPromise);
+  runningTransactions += 1;
+  cacheTransactionIntern(callbackOrPromise);
 };
 
 
@@ -171,14 +163,12 @@ const handleChange = (valueType, keyValueAlternateKeys, fieldNameAdd, fieldNames
     // Copying the original entry is not just done to add the order, but is mandatory to get the value
     // at the point of change and not the current cache value in the change event!
     changeObject[valueType][fieldNameAdd].push({...keyValueAlternateKeys, order: changeOrder++});
-    //console.log("existing " + valueType + "::" + fieldNameAdd + ": ", changeObject[valueType][fieldNameAdd]);
   }
   else {
     changeObject.valueTypes.add(valueType);
     changeObject[valueType] = {
       [fieldNameAdd]: [{...keyValueAlternateKeys, order: changeOrder++}],
     };
-    //console.log("new " + valueType + "::" + fieldNameAdd + ": ", changeObject[valueType][fieldNameAdd]);
     fieldNamesUnchanged.forEach(fieldName => {
       changeObject[valueType][fieldName] = [];
     })
@@ -260,9 +250,7 @@ const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray
 };
 
 const entryGetter = (key, alternateKeyToKey, getter) => {
-  console.log("get: ", key);
   let entry = getter(key);
-  console.log("got entry: ", entry);
   if (typeof entry === "undefined" && alternateKeyToKey.has(key)) {
     entry = getter(alternateKeyToKey.get(key));
   }
@@ -352,12 +340,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @returns {boolean} true, if the key was in the cache.
    */
   self.delete = keyOrAlternateKey => {
-    console.log("inn delete");
-    lruMap.forEach((v, k) => {
-      console.log("lruMap: ", k);
-    });
     const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.getWithoutLruChange);
-    console.log("entry: ", entry);
     if (typeof entry === "undefined") {
       return false;
     }
