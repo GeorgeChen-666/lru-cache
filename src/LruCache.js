@@ -266,6 +266,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   /** Like 'setAll', but returning a Promise that is executed in another event loop.
    * @memberof LruCache
    * @function
+   * @returns {Promise}
    */
   self.setAllAsync = asyncWrap(self.setAll);
 
@@ -285,6 +286,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   /** Like 'set', but returning a Promise that is executed in another event loop.
    * @memberof LruCache
    * @function
+   * @returns {Promise}
    */
   self.setAsync = asyncWrap(self.set);
 
@@ -374,7 +376,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @function
    * @returns {int} current number of entries in this cache
    */
-  self.getSize = lruMap.getSize();
+  self.getSize = lruMap.getSize;
 
   /** Get the value type of this cache.
    * @memberof LruCache
@@ -388,7 +390,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @function
    * @returns {int} max size of this cache
    */
-  self.getMaxSize = lruMap.getMaxSize();
+  self.getMaxSize = lruMap.getMaxSize;
 
   /** Set a new max size for this cache.
    *  If this leads to the removal of cache entries, a corresponding cache changed event will be dispatched.
