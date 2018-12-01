@@ -11,6 +11,23 @@ const VALUE_TYPE_2 = "valueType2";
 const DEFAULT_CACHE_SIZE = 500;
 
 
+beforeAll(() => {
+  getCache(VALUE_TYPE_1).dispatchLruRemoves(true);
+  getCache(VALUE_TYPE_1).dispatchClearRemoves(true);
+  getCache(VALUE_TYPE_2).dispatchLruRemoves(true);
+  getCache(VALUE_TYPE_2).dispatchClearRemoves(true);
+});
+
+afterAll(() => {
+  getCache(VALUE_TYPE_1).dispatchLruRemoves(false);
+  getCache(VALUE_TYPE_1).dispatchClearRemoves(false);
+  getCache(VALUE_TYPE_2).dispatchLruRemoves(false);
+  getCache(VALUE_TYPE_2).dispatchClearRemoves(false);
+  getCache(VALUE_TYPE_1).clear();
+  getCache(VALUE_TYPE_2).clear();
+});
+
+
 describe("LruCache", () => {
   it("should provide a 'set' method for a key/value pair and a 'get' method to retrieve by key", () => {
     const cache1 = getCache(VALUE_TYPE_1);

@@ -13,7 +13,7 @@ const nData = 1000000;
 const nLoops = 3;
 const nUpdates = (2 * nData * nLoops) - nData;
 
-const VALUE_TYPE = "Test";
+const VALUE_TYPE = "PT";
 
 const getRandomString = () => Math.random().toString(36).substr(2, 10);
 

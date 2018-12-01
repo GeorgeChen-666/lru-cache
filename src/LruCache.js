@@ -276,7 +276,7 @@ const wrapInTransaction = (valueType, transactionCallback) => {
   }
 };
 
-const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray) => {
+const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray, dispatchLruRemoves) => {
   if (!Array.isArray(keyValueAlternateKeysArray)) {
     throw new Error("LruCache::setAll: keyValueAlternateKeysArray must be an array");
   }
@@ -313,7 +313,9 @@ const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray
         removed.value.alternateKeys.forEach(altKey => {
           alternateKeyToKey.delete(altKey);
         });
-        handleLruRemove(valueType, removed.value);
+        if (dispatchLruRemoves) {
+          handleLruRemove(valueType, removed.value);
+        }
       }
     });
   });
@@ -327,7 +329,9 @@ const entryGetter = (key, alternateKeyToKey, getter) => {
   return entry;
 };
 
-/** Cannot be instantiated directly. Use 'getCache' to get a cache instance.
+/** Cannot be instantiated directly! Use 'getCache' to get a cache instance.
+ *  By default, cache events are dispatched only for inserts/updates and deletes.
+ *  To dispatch also LRU removes and/or clear removes, use the corresponding setters.
  * @class LruCache
  * @param {string} valueType - The value type of this cache
  * @param {maxSize} maxSize - The maximum number of entries for the given value type (default: 500)
@@ -336,11 +340,33 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   const self = this instanceof LruCache ? this : Object.create(LruCache.prototype);
   const lruMap = LruMap(maxSize);
   const alternateKeyToKey = new Map();
+  let dispatchLruRemoves = false;
+  let dispatchClearRemoves = false;
+
+  /** Set whether the cache should also dispatch events for LRU removes
+   * @memberof LruCache
+   * @function
+   * @param {boolean} newValue - true, if LRU removes should be dispatched
+   * @returns {undefined} void
+   */
+  self.dispatchLruRemoves = newValue => {
+    dispatchLruRemoves = newValue;
+  };
+
+  /** Set whether the cache should also dispatch events for clear removes
+   * @memberof LruCache
+   * @function
+   * @param {boolean} newValue - true, if clear removes should be dispatched
+   * @returns {undefined} void
+   */
+  self.dispatchClearRemoves = newValue => {
+    dispatchClearRemoves = newValue;
+  };
 
   /** Insert or update multiple cache entries.
    *  If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
    *  A corresponding cache changed event will be dispatched.
-   *  If inserts lead to cache max size being exceeded, the changed event will contain both, inserts and removes.
+   *  If inserts lead to cache max size being exceeded and dispatchLruRemoves is set to true, the cache change event will contain both, inserts and removes.
    *  It is even possible that an entry from the inserts is also contained in the removes.
    * @memberof LruCache
    * @function
@@ -348,7 +374,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @returns {undefined} void
    */
   self.setAll = keyValueAlternateKeysArray => {
-    setAll(valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray);
+    setAll(valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray, dispatchLruRemoves);
   };
 
   /** Like 'setAll', but returning a Promise that is executed in another event loop.
@@ -361,7 +387,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   /** Insert or update a cache entry.
    *  If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
    *  A corresponding cache changed event will be dispatched.
-   *  If an insert leads to cache max size being exceeded, the cached change event will contain both, insert and remove.
+   *  If an insert leads to cache max size being exceeded and dispatchLruRemoves is set to true, the cache change event will contain both, insert and remove.
    * @memberof LruCache
    * @function
    * @param {object} keyValueAlternateKeys - object with 'key' and 'value' and optional 'alternateKeys'
@@ -449,11 +475,13 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   self.clear = () => {
     const keyValueArray = lruMap.clear();
     alternateKeyToKey.clear();
-    wrapInTransaction(valueType, () => {
-      keyValueArray.forEach(keyValuePair => {
-        handleClearRemove(valueType, keyValuePair.value);
+    if (dispatchClearRemoves) {
+      wrapInTransaction(valueType, () => {
+        keyValueArray.forEach(keyValuePair => {
+          handleClearRemove(valueType, keyValuePair.value);
+        });
       });
-    });
+    }
   };
 
   /** Get the number of currently cached objects.
@@ -478,7 +506,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   self.getMaxSize = lruMap.getMaxSize;
 
   /** Set a new max size for this cache.
-   *  If this leads to the removal of cache entries, a corresponding cache changed event will be dispatched.
+   *  If this leads to the removal of cache entries and dispatchLruRemoves is set true, a corresponding cache changed event will be dispatched.
    * @memberof LruCache
    * @function
    * @param {int} newMaxSize - the new max number of entries for this cache.
@@ -486,9 +514,14 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    */
   self.setMaxSize = newMaxSize => {
     const keyValueArray = lruMap.setMaxSize(newMaxSize);
-    keyValueArray.forEach(keyValuePair => {
-      wrapInTransaction(valueType, () => {
-        handleLruRemove(valueType, keyValuePair.value);
+    wrapInTransaction(valueType, () => {
+      keyValueArray.forEach(keyValuePair => {
+        keyValuePair.value.alternateKeys.forEach(altKey => {
+          alternateKeyToKey.delete(altKey);
+        });
+        if (dispatchLruRemoves) {
+          handleLruRemove(valueType, keyValuePair.value);
+        }
       });
     });
   };
