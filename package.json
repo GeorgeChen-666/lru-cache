@@ -1,6 +1,6 @@
 {
   "name": "@swarmy/lru-cache",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "LRU cache with event registry to handle cache changes",
   "author": "Gerd Neudert",
   "license": "MIT",
@@ -23,31 +23,10 @@
   "main": "build/lru-cache.js",
   "scripts": {
     "lint": "eslint \"src/**\" -o lint-report.html -f html",
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --config jest.config.functional.js",
+    "test-performance": "jest --runInBand --config jest.config.performance.js",
     "build": "webpack --config webpack.prod.js",
     "generate-doc": "./node_modules/.bin/jsdoc -a all -d docs ./src/LruCache.js"
-  },
-  "jest": {
-    "transform": {
-      "^.+\\.js?": "babel-jest"
-    },
-    "globals": {
-      "widow": true
-    },
-    "collectCoverage": true,
-    "coverageDirectory": "coverage",
-    "coverageReporters": [
-      "html"
-    ],
-    "reporters": [
-      "default",
-      [
-        "./node_modules/jest-html-reporter",
-        {
-          "pageTitle": "Test Report"
-        }
-      ]
-    ]
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",

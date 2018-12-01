@@ -1,0 +1,129 @@
+<html><head><meta charset="utf-8"/><title>Performance Test Report</title><style type="text/css">html, body {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1rem;
+	margin: 0;
+	padding: 0;
+	color: #333;
+}
+body {
+	padding: 1rem;
+	font-size: 0.85rem;
+}
+header {
+	display: flex;
+	align-items: center;
+}
+#title {
+	margin: 0;
+	flex-grow: 1;
+}
+#logo {
+	height: 4rem;
+}
+#timestamp {
+	font-weight: bold;
+	color: #666;
+	margin-bottom: 0.5rem;
+}
+#summary {
+	color: #999;
+	margin-bottom: 1rem;
+}
+.suite-info {
+	padding: 1rem;
+	background-color: #eee;
+	border-bottom: 2px solid #999;
+	color: #999;
+	display: flex;
+	align-items: center;
+}
+.suite-info .suite-path {
+	font-weight: bold;
+	word-break: break-all;
+	flex-grow: 1;
+}
+.suite-info .suite-time {
+	margin-left: 0.5rem;
+	padding: 0.2rem 0.3rem;
+	font-size: 0.75rem;
+}
+.suite-info .suite-time.warn {
+	background-color: #D8000C;
+	color: #fff;
+}
+.suite-table {
+	width: 100%;
+	font-size: 0.85rem;
+	margin-bottom: 1em;
+}
+.suite-table td {
+	padding: 0.5rem;
+}
+.suite-table tr.passed {
+	background-color: #DFF2BF;
+	color: #4F8A10;
+}
+.suite-table tr.pending {
+	background-color: #FEEFB3;
+	color: #9F6000;
+}
+.suite-table tr.failed {
+	background-color: #FFBABA;
+	color: #D8000C;
+}
+.suite-table td {
+	font-size: 0.85rem;
+	border-bottom: 1px solid #aaa;
+	vertical-align: top;
+}
+.suite-table td.suite {
+	font-weight: bold;
+	width: 20%;
+}
+.suite-table td.test {
+	font-style: italic;
+	width: 60%;
+}
+.suite-table td.test .failureMsg {
+	font-size: 1rem;
+	white-space: pre-wrap;
+	white-space: -moz-pre-wrap;
+	white-space: -pre-wrap;
+	white-space: -o-pre-wrap;
+	word-wrap: break-word;
+}
+.suite-table td.result {
+	width: 20%;
+	text-align: right;
+}
+
+/* CONSOLE LOGS */
+.suite-consolelog {
+	margin-bottom: 2rem;
+	padding: 1rem;
+	background-color: #efefef;
+}
+.suite-consolelog-header {
+	font-weight: bold;
+}
+.suite-consolelog-item {
+	padding: 0.5rem;
+}
+.suite-consolelog-item pre {
+	margin: 0;
+}
+.suite-consolelog-item-origin {
+	color: #777;
+	font-weight: bold;
+}
+.suite-consolelog-item-message {
+	color: #000;
+	font-size: 1rem;
+	padding: 0 0.5rem;
+}
+</style></head><header><h1 id="title">Performance Test Report</h1></header><div id="metadata-container"><div id="timestamp">Start: 2018-12-01 23:09:37</div><div id="summary">
+				8 tests --
+				8 passed /
+				0 failed /
+				0 pending
+			</div></div><div class="suite-info"><div class="suite-path">/home/gerd/work/cache-this/src/test/performance.test.js</div><div class="suite-time warn">60.762s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Performance Javascript Map</td><td class="test">should measure the time for 1000000 inserts and 5000000 updates in a normal Javascript Map</td><td class="result">passed in 1.132s</td></tr><tr class="passed"><td class="suite">Performance Javascript Map</td><td class="test">should measure the time for 30000000 'get' calls on normal Javascript Map</td><td class="result">passed in 0.023s</td></tr><tr class="passed"><td class="suite">Performance LruMap</td><td class="test">should measure the time for 1000000 inserts and 5000000 updates in LruMap with infinite maxSize</td><td class="result">passed in 1.209s</td></tr><tr class="passed"><td class="suite">Performance LruMap</td><td class="test">should measure the time for 30000000 'getWithoutLruChange' calls on LruMap</td><td class="result">passed in 3.414s</td></tr><tr class="passed"><td class="suite">Performance LruMap</td><td class="test">should measure the time for 30000000 'get' calls on LruMap (making the corresponding entry the most recently used)</td><td class="result">passed in 5.229s</td></tr><tr class="passed"><td class="suite">Performance LruMap</td><td class="test">should measure the time for 1000000 inserts and 5000000 updates in LruMap with maxSize 3</td><td class="result">passed in 8.021s</td></tr><tr class="passed"><td class="suite">Performance LruCache without listeners</td><td class="test">should measure the time for 1000000 inserts and 5000000 updates in LruCache with infinite maxSize and no event listener</td><td class="result">passed in 19.975s</td></tr><tr class="passed"><td class="suite">Performance LruCache without listeners</td><td class="test">should measure the time for 1000000 inserts and 5000000 updates in LruCache with maxSize 3 and no event listener</td><td class="result">passed in 19.397s</td></tr></table></html>

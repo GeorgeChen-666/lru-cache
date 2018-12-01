@@ -1,6 +1,7 @@
 # lru-cache
 A Javascript LRU-cache for node and/or browser, featuring:
 * LRU cache logic
+* Alternate keys
 * Singleton caches per value type
 * Event registry for cache change events
 
@@ -8,6 +9,15 @@ A Javascript LRU-cache for node and/or browser, featuring:
 ```javascript
 npm install --save @swarmy/lru-cache
 ```
+
+## Motivation
+There are for sure more than a handful of different LRU-cache implementations flying around on npm.
+
+What makes this one unique is that it features the use of alternate keys and an event registry for cache change events.
+
+Alternate keys are useful in situations where certain cache consumers have no access to the primary key, or would have to construct or fetch the primary key in advance.
+
+Cache events are useful to have a central point to handle object changes in an application with multiple models. E.g. register all models as listeners and ensure that all entity updates and deletes go over the cache. Than you can ensure that each update or delete of a certain entity, be it due to a change coming from a certain controller or due to a server push, will keep all models in sync. I have applications where I have no need to cache for performance reasons, but still use this pattern to keep my Redux state up to date (by having a single cache listener that dispatches a corresponding action).
 
 ## Basic Usage
 
@@ -37,6 +47,7 @@ WIP
 ## Quality
 * [Test results](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/test-report.html)
 * [Test coverage](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/coverage/index.html)
+* [Performance tests](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/performance-report.html)
 
 ## Develop
 ```javascript
@@ -46,6 +57,7 @@ npm install
 // no you can do:
 npm run build
 npm run test
+npm run test-performance
 npm run generate-doc
 ```
 
