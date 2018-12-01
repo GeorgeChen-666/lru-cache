@@ -6,7 +6,62 @@ const DEFAULT_MAX_SIZE = 500;
 
 let nextHandlerKey = 0;
 const keyToChangedHandler = new Map();
+const valueTypeToActiveChangeHandlerKeys = new Map();
+const allTypesActiveChangeHandlerKeys = new Set();
 
+const addToActiveHandlerKeys = (key, valueTypes) => {
+  if (valueTypes === null || (Array.isArray(valueTypes) && valueTypes.length === 0)) {
+    allTypesActiveChangeHandlerKeys.add(key);
+  }
+  else {
+    const types = Array.isArray(valueTypes) ? valueTypes : [valueTypes];
+    types.forEach(valueType => {
+      let activeChangeHandlerKeys = valueTypeToActiveChangeHandlerKeys.get(valueType);
+      if (typeof activeChangeHandlerKeys === "undefined") {
+        activeChangeHandlerKeys = new Set();
+        valueTypeToActiveChangeHandlerKeys.set(valueType, activeChangeHandlerKeys);
+      }
+      activeChangeHandlerKeys.add(key);
+    });
+  }
+};
+
+const removeFromActiveHandlerKeys = (key, valueTypes) => {
+  if (valueTypes === null || (Array.isArray(valueTypes) && valueTypes.length === 0)) {
+    allTypesActiveChangeHandlerKeys.delete(key);
+  }
+  else {
+    const types = Array.isArray(valueTypes) ? valueTypes : [valueTypes];
+    types.forEach(valueType => {
+      valueTypeToActiveChangeHandlerKeys.get(valueType).delete(key);
+    });
+  }
+};
+
+const getActiveHandlerKeys = valueTypes => {
+  const types = typeof valueTypes === "string" ? [valueTypes] : valueTypes;
+  const result = new Set();
+  types.forEach(valueType => {
+    const activeChangeHandlerKeys = valueTypeToActiveChangeHandlerKeys.get(valueType);
+    if (typeof activeChangeHandlerKeys !== "undefined") {
+      activeChangeHandlerKeys.forEach(key => {
+        result.add(key);
+      });
+    }
+  });
+  allTypesActiveChangeHandlerKeys.forEach(key => {
+    result.add(key);
+  });
+  return result;
+};
+
+const hasActiveHandler = valueType => {
+  if (allTypesActiveChangeHandlerKeys.size > 0) {
+    return true;
+  }
+  const activeChangeHandlerKeys = valueTypeToActiveChangeHandlerKeys.get(valueType);
+  return typeof activeChangeHandlerKeys === "undefined" ? false : activeChangeHandlerKeys.size > 0;
+};
 
 /**
  * Register a handler that is called when value(s) get updated/inserted/removed in/to/from a cache.
@@ -28,10 +83,10 @@ const keyToChangedHandler = new Map();
  *                   }
  *                   The order can be used to determine e.g. if an entry was first inserted and then deleted, or first
  *                   deleted and then re-inserted (can happen in cache transactions).
- * @param {Array} valueTypes - An array specifying the cache value types the handler should be called for (default: null)
+ * @param {Array | string} valueTypes - An array or a single string specifying the cache value types the handler should be called for (default: null)
  *                 If null, it will be called for all object types
  *                 If not null and a bulk (transactional) change has multiple valueTypes of which only some are of
- *                 interest for the handler, then also the other types will be part of the argument (all or nothing)
+ *                 interest for the handler, then also the other types will be part of the argument (if at least one other active listener for the other types exist)
  * @return {object} handlerHandle - An object with methods unregister, activate, deactivate and isRegistered and with fields isActive, valueType and changedHandler
  */
 export const registerCacheChangedHandler = (changedHandler, valueTypes = null) => {
@@ -43,45 +98,38 @@ export const registerCacheChangedHandler = (changedHandler, valueTypes = null) =
     isActive: true,
     unregister: () => {
       keyToChangedHandler.delete(key);
+      removeFromActiveHandlerKeys(key, valueTypes);
     },
   };
   handler.activate = () => {
     handler.isActive = true;
+    addToActiveHandlerKeys(key, valueTypes);
   };
   handler.deactivate = () => {
     handler.isActive = false;
+    removeFromActiveHandlerKeys(key, valueTypes);
   };
   handler.isRegistered = () => keyToChangedHandler.has(key);
   keyToChangedHandler.set(key, handler);
+  addToActiveHandlerKeys(key, valueTypes);
   return handler;
 };
 
 
 const handleTransactionChangeObject = changeObject => {
+  const activeHandlerKeys = getActiveHandlerKeys(changeObject.valueTypes);
   const errors = [];
   let handled = 0;
-  keyToChangedHandler.forEach(handler => {
-    if (handler.isActive) {
-      let doCall = handler.valueTypes === null;
-      if (!doCall) {
-        for (let i = 0; i < handler.valueTypes.length; ++i) {
-          if (changeObject.valueTypes.has(handler.valueTypes[i])) {
-            doCall = true;
-            break;
-          }
-        }
-      }
-      if (doCall) {
-        try {
-          handler.changedHandler(changeObject);
-        }
-        catch(error) {
-          errors.push(error);
-        }
-        finally {
-          handled += 1;
-        }
-      }
+  activeHandlerKeys.forEach(key => {
+    const handler = keyToChangedHandler.get(key);
+    try {
+      handler.changedHandler(changeObject);
+    }
+    catch(error) {
+      errors.push(error);
+    }
+    finally {
+      handled += 1;
     }
   });
   if (errors.length > 0) {
@@ -89,7 +137,9 @@ const handleTransactionChangeObject = changeObject => {
     errors.forEach(error => {
       message += error.message + ", ";
     });
-    throw new Error(message);
+    const error = new Error(message);
+    error.errors = errors;
+    throw error;
   }
 };
 
@@ -97,7 +147,22 @@ const handleTransactionChangeObject = changeObject => {
 let transactionChangeObject = null;
 let changeOrder = 0;
 let runningTransactions = 0;
-const cacheTransactionIntern = callbackOrPromise => {
+
+/** Pass a callback or a promise. All cache changes happening inside the callback or promise will be batched into a single
+ *  change object that will be dispatched to handlers after the callback/promise has finished. If this is called while there
+ *  is already another transaction in progress, the two transactions will just be batched together.
+ * @memberof @swarmy/lru-cache
+ * @function
+ * @param {function | Promise} callbackOrPromise - callback or promise to be executed within the transaction
+ * @return {undefined} void
+ */
+export const cacheTransaction = callbackOrPromise => {
+  if (transactionChangeObject === null) {
+    transactionChangeObject = {
+      valueTypes: new Set(),
+    };
+  }
+  runningTransactions += 1;
   if (typeof callbackOrPromise.finally === "function") {
     callbackOrPromise.finally(() => {
       runningTransactions -= 1;
@@ -131,26 +196,6 @@ const cacheTransactionIntern = callbackOrPromise => {
   }
 };
 
-
-/** Pass a callback or a promise. All cache changes happening inside the callback or promise will be batched into a single
- *  change object that will be dispatched to handlers after the callback/promise has finished. If this is called while there
- *  is already another transaction in progress, the two transactions will just be batched together.
- * @memberof @swarmy/lru-cache
- * @function
- * @param {function | Promise} callbackOrPromise - callback or promise to be executed within the transaction
- * @return {undefined} void
- */
-export const cacheTransaction = callbackOrPromise => {
-  if (transactionChangeObject === null) {
-    transactionChangeObject = {
-      valueTypes: new Set(),
-    };
-  }
-  runningTransactions += 1;
-  cacheTransactionIntern(callbackOrPromise);
-};
-
-
 const handleChange = (valueType, keyValueAlternateKeys, fieldNameAdd, fieldNamesUnchanged) => {
   let changeObject = transactionChangeObject;
   const batchChanges = changeObject !== null;
@@ -178,20 +223,30 @@ const handleChange = (valueType, keyValueAlternateKeys, fieldNameAdd, fieldNames
   }
 };
 
+let handleChanges = true;
+
 const handleInsert = (valueType, keyValueAlternateKeys) => {
-  handleChange(valueType, keyValueAlternateKeys, "inserts", ["clearRemoves", "lruRemoves", "deleteRemoves"]);
+  if (handleChanges) {
+    handleChange(valueType, keyValueAlternateKeys, "inserts", ["clearRemoves", "lruRemoves", "deleteRemoves"]);
+  }
 };
 
 const handleClearRemove = (valueType, keyValueAlternateKeys) => {
-  handleChange(valueType, keyValueAlternateKeys, "clearRemoves", ["inserts", "lruRemoves", "deleteRemoves"]);
+  if (handleChanges) {
+    handleChange(valueType, keyValueAlternateKeys, "clearRemoves", ["inserts", "lruRemoves", "deleteRemoves"]);
+  }
 };
 
 const handleLruRemove = (valueType, keyValueAlternateKeys) => {
-  handleChange(valueType, keyValueAlternateKeys, "lruRemoves", ["clearRemoves", "inserts", "deleteRemoves"]);
+  if (handleChanges) {
+    handleChange(valueType, keyValueAlternateKeys, "lruRemoves", ["clearRemoves", "inserts", "deleteRemoves"]);
+  }
 };
 
 const handleDeleteRemove = (valueType, keyValueAlternateKeys) => {
-  handleChange(valueType, keyValueAlternateKeys, "deleteRemoves", ["clearRemoves", "lruRemoves", "inserts"]);
+  if (handleChanges) {
+    handleChange(valueType, keyValueAlternateKeys, "deleteRemoves", ["clearRemoves", "lruRemoves", "inserts"]);
+  }
 };
 
 const asyncWrap = syncFunction => (...args) => new Promise((resolve, reject) => {
@@ -206,11 +261,26 @@ const asyncWrap = syncFunction => (...args) => new Promise((resolve, reject) => 
   }, 0);
 });
 
+const wrapInTransaction = (valueType, transactionCallback) => {
+  if (hasActiveHandler(valueType)) {
+    cacheTransaction(transactionCallback);
+  }
+  else {
+    try {
+      handleChanges = false;
+      transactionCallback();
+    }
+    finally {
+      handleChanges = true;
+    }
+  }
+};
+
 const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray) => {
   if (!Array.isArray(keyValueAlternateKeysArray)) {
     throw new Error("LruCache::setAll: keyValueAlternateKeysArray must be an array");
   }
-  cacheTransaction(() => {
+  wrapInTransaction(valueType, () => {
     keyValueAlternateKeysArray.forEach(({key, value, alternateKeys}) => {
       let entry = lruMap.get(key);
       let altKeys = Array.isArray(alternateKeys) ? alternateKeys : [];
@@ -348,9 +418,9 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     entry.alternateKeys.forEach(altKey => {
       alternateKeyToKey.delete(altKey);
     });
-    // It is important to warp even single actions into cacheTransaction to get consistent behavior,
+    // It is important to wrap even single actions to get consistent behavior,
     // e.g. to always reset 'order', even after a delete
-    cacheTransaction(() => {
+    wrapInTransaction(valueType, () => {
       handleDeleteRemove(valueType, entry);
     });
     return true;
@@ -379,7 +449,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   self.clear = () => {
     const keyValueArray = lruMap.clear();
     alternateKeyToKey.clear();
-    cacheTransaction(() => {
+    wrapInTransaction(valueType, () => {
       keyValueArray.forEach(keyValuePair => {
         handleClearRemove(valueType, keyValuePair.value);
       });
@@ -417,7 +487,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   self.setMaxSize = newMaxSize => {
     const keyValueArray = lruMap.setMaxSize(newMaxSize);
     keyValueArray.forEach(keyValuePair => {
-      cacheTransaction(() => {
+      wrapInTransaction(valueType, () => {
         handleLruRemove(valueType, keyValuePair.value);
       });
     });

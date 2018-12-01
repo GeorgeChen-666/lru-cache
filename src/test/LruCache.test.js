@@ -309,7 +309,7 @@ describe("getCache", () => {
 
 describe("registerCacheChangedHandler", () => {
 
-  it("should register a listener to cache change events and return a handlerHandle to activat/deactivate or unregister the listener", () => {
+  it("should register a listener to cache change events and return a handlerHandle to activate/deactivate or unregister the listener", () => {
     const cache1 = getCache(VALUE_TYPE_1);
 
     let changeCounter = 0;
@@ -595,9 +595,9 @@ describe("cacheTransaction", () => {
     cache1.setMaxSize(2);
 
     let changeObject = null;
-    const handlerHandle = registerCacheChangedHandler(changes => {
+    let handlerHandle = registerCacheChangedHandler(changes => {
       changeObject = changes;
-    }, [VALUE_TYPE_2]);
+    });
 
     cacheTransaction(() => {
       cache1.setAll([
@@ -669,11 +669,21 @@ describe("cacheTransaction", () => {
     expect(changeObject[VALUE_TYPE_1].inserts[2].value).toEqual("value2 of type 1 modified");
 
     changeObject = null;
+    handlerHandle.unregister();
+    handlerHandle = registerCacheChangedHandler(changes => {
+      changeObject = changes;
+    }, [VALUE_TYPE_2]);
     cache1.set({
       key: "key2", // order 2
       value: "value2 of type 1 modified again",
     });
     expect(changeObject).toEqual(null); // handler listens only to VT2 changes involved
+
+    cache2.set({
+      key: "key2", // order 2
+      value: "value2 of type 2 modified again",
+    });
+    expect(changeObject[VALUE_TYPE_2].inserts.length).toEqual(1);
 
     handlerHandle.unregister();
     cache1.clear();
