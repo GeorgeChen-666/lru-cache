@@ -159,5 +159,4 @@ describe("LruMap", () => {
     expect(keys[1]).toEqual("key5");
   });
 
-
 });
