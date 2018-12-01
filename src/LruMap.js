@@ -141,7 +141,7 @@ export function LruMap(maxSize = null) {
   };
 
   /** Return value for key (undefined if not exists).
-   *  Makes the entry the last recently used
+   *  Makes the entry the most recently used
    * @param {string} key - The entry key
    * @return {object} The corresponding value or undefined
    */
@@ -154,16 +154,16 @@ export function LruMap(maxSize = null) {
     return entry.value;
   };
 
-  /** Like 'get', but not making the corresponding entry the last recently used.
+  /** Like 'get', but not making the corresponding entry the most recently used.
    * @param {string} key - The entry key
    * @return {object} The corresponding value or undefined
    */
-  self.getWithoutLruChange = key => {
-    const entry = keyToEntry.get(key);
-    if (typeof entry === "undefined") {
-      return entry;
+  self.getWithoutLruChange = key => { // eslint-disable-line consistent-return
+    // Using the try-catch approach here is significantly faster compared to prior testing if the key is in the map.
+    try {
+      return keyToEntry.get(key).value;
     }
-    return entry.value;
+    catch (e) {} // eslint-disable-line no-empty
   };
 
   /** Remove the entry with the given key from the map. Returns false, in case the key was not in the map

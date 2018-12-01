@@ -12,6 +12,8 @@ const testValues = [];
 const nData = 1000000;
 const nLoops = 3;
 const nUpdates = (2 * nData * nLoops) - nData;
+const nGetLoops = nLoops * 10;
+const nGets = nData * nGetLoops;
 
 const VALUE_TYPE = "PT";
 
@@ -31,8 +33,8 @@ beforeAll(() => {
 
 describe("Performance Javascript Map", () => {
 
+  const map = new Map();
   it("should measure the time for " + nData + " inserts and " + nUpdates + " updates in a normal Javascript Map", () => {
-    const map = new Map();
     for (let n = 0; n < nLoops; ++n) {
       for (let i = 0; i < nData; ++i) {
         map.set(testKeys[i], testValues[i]);
@@ -43,19 +45,44 @@ describe("Performance Javascript Map", () => {
     }
   });
 
+  it("should measure the time for " + nGets + " 'get' calls on normal Javascript Map", () => {
+    for (let n = 0; n < nGetLoops; ++n) {
+      for (let i = 0; i < nData; ++i) {
+        map.get(testKeys[i]);
+      }
+    }
+  });
+
 });
 
 
 describe("Performance LruMap", () => {
 
+  const map1 = new LruMap();
+
   it("should measure the time for " + nData + " inserts and " + nUpdates + " updates in LruMap with infinite maxSize", () => {
-    const map = new LruMap();
     for (let n = 0; n < nLoops; ++n) {
       for (let i = 0; i < nData; ++i) {
-        map.set(testKeys[i], testValues[i]);
+        map1.set(testKeys[i], testValues[i]);
       }
       for (let i = 0, j = nData - 1; i < nData; ++i, --j) {
-        map.set(testKeys[i], testValues[j]);
+        map1.set(testKeys[i], testValues[j]);
+      }
+    }
+  });
+
+  it("should measure the time for " + nGets + " 'getWithoutLruChange' calls on LruMap", () => {
+    for (let n = 0; n < nGetLoops; ++n) {
+      for (let i = 0; i < nData; ++i) {
+        map1.getWithoutLruChange(testKeys[i]);
+      }
+    }
+  });
+
+  it("should measure the time for " + nGets + " 'get' calls on LruMap (making the corresponding entry the most recently used)", () => {
+    for (let n = 0; n < nGetLoops; ++n) {
+      for (let i = 0; i < nData; ++i) {
+        map1.get(testKeys[i]);
       }
     }
   });

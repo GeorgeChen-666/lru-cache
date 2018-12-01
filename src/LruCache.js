@@ -406,7 +406,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
 
   /** Get value from cache by either its key or one of its alternate keys (if exists).
    *  Returns undefined, if not in cache.
-   *  Makes the corresponding entry the last recently used (use 'getWithoutLruChange' to avoid this).
+   *  Makes the corresponding entry the most recently used (use 'getWithoutLruChange' to avoid this).
    * @memberof LruCache
    * @function
    * @param {string} keyOrAlternateKey - The key or alternate key of the value
@@ -417,7 +417,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     return typeof entry === "undefined" ? entry : entry.value;
   };
 
-  /** Like 'get', but not making the corresponding entry the last recently used.
+  /** Like 'get', but not making the corresponding entry the most recently used.
    * @memberof LruCache
    * @function
    * @param {string} keyOrAlternateKey - The key or alternate key of the value
