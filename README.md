@@ -4,6 +4,7 @@ A Javascript LRU-cache for node and/or browser, featuring:
 * Alternate keys
 * Singleton caches per value type
 * Event registry for cache change events
+* No dependencies
 
 ## Installation
 ```javascript
@@ -42,7 +43,17 @@ if (!user) {
     * [JSDoc](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/docs/index.html)
 
 ### Cache Events
-WIP
+To register for all cache change events
+```javascript
+import {registerCacheChangedHandler} from "@swarmy/lru-cache";
+
+registerCacheChangedHandler(changeObject => {
+    console.log("changes:", changeObject);
+});
+```
+* For detailed description of all cache methods, have a look at
+    * [Detailed Usage](#cache-events-detail)
+    * [JSDoc](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/docs/index.html)
 
 ## Quality
 * [Test results](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/test-report.html)
@@ -66,5 +77,25 @@ npm run generate-doc
 ### Caching <a name="caching-detail"></a>
 WIP
 
-### Cache Events
+### Cache Events <a name="cache-events-detail"></a>
 WIP
+
+## Questions
+
+### What are the tradeoffs?
+* Compared to a native Javascript Map, the LRU logic implies performance impact on get, set and delete. It's just the price to pay for having a LRU cache.
+    * See [Performance tests](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/performance-report.html)
+* Compared to a LRU cache without cache events, the is additional performance impact on get, set and delete.
+    * Again see [Performance tests](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/performance-report.html)
+    * However, if you are caching for performance, then because the fetching of values is significantly more time consuming. So whether you save 400ms or only 399ms hardly makes a difference here.
+    * If you are not caching for performance reasons, but to have the change events, well than again it's just the price to pay for the event handling.
+
+
+### Why can I not differentiate between insert and update in the change events?
+Garbage collected languages without weak references make the use of some patterns impossible. Two of these patterns affect this library:
+1. One cannot implement an instance-cache, hence a cache that ensures to not discard an entry, as long as this entry is referenced from somewhere outside the cache. If upon calling the set method, the value is not already in the cache, there is no way to tell, if it was never there, or if it was there an has been LRU discarded.
+2. One cannot implement event registries that reference listeners only weakly. Thus, it is up to the consumker of this library to ensure that no memory leaks occur due to not unregistered event listeners.
+
+### Why can I not just have a sorted list with all changes in the cache event, instead of sorting myself by order attribute?
+* I just did not want to further increase the size of change object by another array holding redundant data.
+* However, maybe in a future version, I will make it configurable to optionally include such a list.

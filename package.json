@@ -25,8 +25,10 @@
     "lint": "eslint \"src/**\" -o lint-report.html -f html",
     "test": "jest --runInBand --config jest.config.functional.js",
     "test-performance": "jest --runInBand --config jest.config.performance.js",
+    "remove-absolute-pathes-from-reports": "sed -i 's,'\"`pwd`\"',.,g' test-report.html performance-report.html",
     "build": "webpack --config webpack.prod.js",
-    "generate-doc": "./node_modules/.bin/jsdoc -a all -d docs ./src/LruCache.js"
+    "generate-doc": "./node_modules/.bin/jsdoc -a all -d docs ./src/LruCache.js",
+    "prep-publish": "rm -rf docs && rm -rf coverage && npm run build && npm run test && npm run test-performance && npm run remove-absolute-pathes-from-reports && npm run generate-doc"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",
