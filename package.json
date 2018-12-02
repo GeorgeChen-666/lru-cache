@@ -1,6 +1,6 @@
 {
   "name": "@swarmy/lru-cache",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "LRU cache with event registry to handle cache changes",
   "author": "Gerd Neudert",
   "license": "MIT",
