@@ -50,16 +50,13 @@ const removeEntry = (entry, entryList, keyToEntry) => {
 };
 
 const removeOldest = (entryList, keyToEntry) => {
+  // As maxSize cannot be <1 and removeOldest is only called, if maxSize exceeded,
+  // we can be sure that at least two entries exist.
   const removedEntry = entryList.oldest;
-  if (keyToEntry.delete(entryList.oldest.key)) {
-    entryList.oldest = entryList.oldest.next;
-    if (entryList.oldest !== null) {
-      entryList.oldest.prev = null;
-    }
-  }
-  delete removedEntry.next;
-  delete removedEntry.prev;
-  return removedEntry;
+  keyToEntry.delete(entryList.oldest.key);
+  entryList.oldest = entryList.oldest.next;
+  entryList.oldest.prev = null;
+  return {key: removedEntry.key, value: removedEntry.value};
 };
 
 const shrinkToMaxSize = (maxSize, entryList, keyToEntry) => {

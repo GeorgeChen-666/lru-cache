@@ -34,8 +34,9 @@ userCache.set(user.id, user);
 ...
 let user = userCache.get(userId);
 if (!user) {
-    await fetchUser(userId);
+    user = await fetchUser(userId);
 }
+...
 ```
 * For the same value type (here "User"), getCache will always return the same cache instance.
 * For detailed description of all cache methods, have a look at
@@ -80,16 +81,16 @@ WIP
 ### Cache Events <a name="cache-events-detail"></a>
 WIP
 
-## Questions
-
-### What are the tradeoffs?
+## Performance
 * Compared to a native Javascript Map, the LRU logic implies performance impact on get, set and delete. It's just the price to pay for having a LRU cache.
     * See [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/a58e345708cb07d4f24434eba9ea4760d61a264b/performance-report.html)
+    * However, the methods are still O(1). (Only setMaxSize has O(size-newMaxSize), if size>newMaxSize)
 * Compared to a LRU cache without cache events, the is additional performance impact on get, set and delete.
     * Again see [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/a58e345708cb07d4f24434eba9ea4760d61a264b/performance-report.html)
     * However, if you are caching for performance, then because the fetching of values is significantly more time consuming. So whether you save 400ms or only 399ms hardly makes a difference here.
     * If you are not caching for performance reasons, but to have the change events, well than again it's just the price to pay for the event handling.
 
+## Questions
 
 ### Why can I not differentiate between insert and update in the change events?
 Garbage collected languages without weak references make the use of some patterns impossible. Two of these patterns affect this library:

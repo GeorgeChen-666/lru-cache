@@ -31,6 +31,30 @@ beforeAll(() => {
 });
 
 
+describe("Performance Javascript Object", () => {
+
+  const map = {};
+  it("should measure the time for " + nData + " inserts and " + nUpdates + " updates in a normal Javascript Object", () => {
+    for (let n = 0; n < nLoops; ++n) {
+      for (let i = 0; i < nData; ++i) {
+        map[testKeys[i]] = testValues[i];
+      }
+      for (let i = 0, j = nData - 1; i < nData; ++i, --j) {
+        map[testKeys[i]] = testValues[j];
+      }
+    }
+  });
+
+  it("should measure the time for " + nGets + " by-key-accesses on normal Javascript Object", () => {
+    for (let n = 0; n < nGetLoops; ++n) {
+      for (let i = 0; i < nData; ++i) {
+        map[testKeys[i]];
+      }
+    }
+  });
+
+});
+
 describe("Performance Javascript Map", () => {
 
   const map = new Map();
