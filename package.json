@@ -1,6 +1,6 @@
 {
   "name": "@swarmy/lru-cache",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "LRU cache with event registry to handle cache changes",
   "author": "Gerd Neudert",
   "license": "MIT",
@@ -28,7 +28,7 @@
     "remove-absolute-pathes-from-reports": "sed -i 's,'\"`pwd`\"',.,g' test-report.html performance-report.html",
     "build": "webpack --config webpack.prod.js",
     "generate-doc": "./node_modules/.bin/jsdoc -a all -d docs ./src/LruCache.js",
-    "prep-publish": "rm -rf docs && rm -rf coverage && npm run build && npm run test && npm run test-performance && npm run remove-absolute-pathes-from-reports && npm run generate-doc"
+    "prep-publish": "rm -rf docs && rm -rf coverage && npm run build && npm run test && npm run test-performance && npm run remove-absolute-pathes-from-reports && npm run generate-doc && echo \"!!!DO NOT FORGET TO UPDATE commit in README afterwards!!!\""
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",
