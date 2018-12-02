@@ -40,7 +40,7 @@ if (!user) {
 * For the same value type (here "User"), getCache will always return the same cache instance.
 * For detailed description of all cache methods, have a look at
     * [Detailed Usage](#caching-detail)
-    * [JSDoc](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/docs/index.html)
+    * [JSDoc](https://rawcdn.githack.com/gneu77/lru-cache/a58e345708cb07d4f24434eba9ea4760d61a264b/docs/index.html)
 
 ### Cache Events
 To register for all cache change events
@@ -53,12 +53,12 @@ registerCacheChangedHandler(changeObject => {
 ```
 * For detailed description of all cache methods, have a look at
     * [Detailed Usage](#cache-events-detail)
-    * [JSDoc](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/docs/index.html)
+    * [JSDoc](https://rawcdn.githack.com/gneu77/lru-cache/a58e345708cb07d4f24434eba9ea4760d61a264b/docs/index.html)
 
 ## Quality
-* [Test results](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/test-report.html)
-* [Test coverage](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/coverage/index.html)
-* [Performance tests](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/performance-report.html)
+* [Test results](https://rawcdn.githack.com/gneu77/lru-cache/a58e345708cb07d4f24434eba9ea4760d61a264b/test-report.html)
+* [Test coverage](https://rawcdn.githack.com/gneu77/lru-cache/a58e345708cb07d4f24434eba9ea4760d61a264b/coverage/index.html)
+* [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/a58e345708cb07d4f24434eba9ea4760d61a264b/performance-report.html)
 
 ## Develop
 ```javascript
@@ -84,9 +84,9 @@ WIP
 
 ### What are the tradeoffs?
 * Compared to a native Javascript Map, the LRU logic implies performance impact on get, set and delete. It's just the price to pay for having a LRU cache.
-    * See [Performance tests](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/performance-report.html)
+    * See [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/a58e345708cb07d4f24434eba9ea4760d61a264b/performance-report.html)
 * Compared to a LRU cache without cache events, the is additional performance impact on get, set and delete.
-    * Again see [Performance tests](http://htmlpreview.github.com/?https://github.com/gneu77/lru-cache/blob/master/performance-report.html)
+    * Again see [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/a58e345708cb07d4f24434eba9ea4760d61a264b/performance-report.html)
     * However, if you are caching for performance, then because the fetching of values is significantly more time consuming. So whether you save 400ms or only 399ms hardly makes a difference here.
     * If you are not caching for performance reasons, but to have the change events, well than again it's just the price to pay for the event handling.
 
