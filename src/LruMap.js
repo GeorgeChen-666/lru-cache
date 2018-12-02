@@ -161,12 +161,9 @@ export function LruMap(maxSize = null) {
    * @param {string} key - The entry key
    * @return {object} The corresponding value or undefined
    */
-  self.getWithoutLruChange = key => { // eslint-disable-line consistent-return
-    // Using the try-catch approach here is significantly faster compared to prior testing if the key is in the map.
-    try {
-      return keyToEntry.get(key).value;
-    }
-    catch (e) {} // eslint-disable-line no-empty
+  self.getWithoutLruChange = key => {
+    const entry = keyToEntry.get(key);
+    return typeof entry === "undefined" ? entry : entry.value;
   };
 
   /** Remove the entry with the given key from the map. Returns false, in case the key was not in the map

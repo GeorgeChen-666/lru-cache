@@ -282,7 +282,7 @@ const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray
   }
   wrapInTransaction(valueType, () => {
     keyValueAlternateKeysArray.forEach(({key, value, alternateKeys}) => {
-      let entry = lruMap.get(key);
+      let entry = lruMap.getWithoutLruChange(key);
       let altKeys = Array.isArray(alternateKeys) ? alternateKeys : [];
       if (altKeys.length === 0 && typeof alternateKeys === "string") {
         altKeys = [alternateKeys];

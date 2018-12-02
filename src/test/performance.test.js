@@ -1,4 +1,4 @@
-/* eslint-disable no-magic-number */
+/* eslint-disable no-magic-number, no-unused-expressions */
 
 import {LruMap} from "../LruMap";
 import {
@@ -16,6 +16,7 @@ const nGetLoops = nLoops * 10;
 const nGets = nData * nGetLoops;
 
 const VALUE_TYPE = "PT";
+const VALUE_TYPE2 = "PT2";
 
 const getRandomString = () => Math.random().toString(36).substr(2, 10);
 
@@ -53,6 +54,12 @@ describe("Performance Javascript Object", () => {
     }
   });
 
+  it("should measure the time for " + nData + " deletes from Javascript Object", () => {
+    for (let i = 0; i < nData; ++i) {
+      delete map[testKeys[i]];
+    }
+  });
+
 });
 
 describe("Performance Javascript Map", () => {
@@ -74,6 +81,12 @@ describe("Performance Javascript Map", () => {
       for (let i = 0; i < nData; ++i) {
         map.get(testKeys[i]);
       }
+    }
+  });
+
+  it("should measure the time for " + nData + " 'delete' calls on normal Javascript Map", () => {
+    for (let i = 0; i < nData; ++i) {
+      map.delete(testKeys[i]);
     }
   });
 
@@ -111,6 +124,14 @@ describe("Performance LruMap", () => {
     }
   });
 
+  it("should measure the time for " + nData + " 'delete' calls on LruMap", () => {
+    for (let n = 0; n < nGetLoops; ++n) {
+      for (let i = 0; i < nData; ++i) {
+        map1.delete(testKeys[i]);
+      }
+    }
+  });
+
   it("should measure the time for " + nData + " inserts and " + nUpdates + " updates in LruMap with maxSize 3", () => {
     const map = new LruMap(3);
     for (let n = 0; n < nLoops; ++n) {
@@ -128,6 +149,17 @@ describe("Performance LruMap", () => {
 
 describe("Performance LruCache without listeners", () => {
 
+  beforeAll(() => {
+    const cache = getCache(VALUE_TYPE2);
+    cache.setMaxSize(null);
+    for (let i = 0; i < nData; ++i) {
+      cache.set({
+        key: testKeys[i],
+        value: testValues[i],
+      });
+    }
+  });
+
   afterEach(() => {
     // We do this in afterEach, because we don't want to measure the time for the clear
     getCache(VALUE_TYPE).clear();
@@ -138,10 +170,25 @@ describe("Performance LruCache without listeners", () => {
     cache.setMaxSize(null);
     for (let n = 0; n < nLoops; ++n) {
       for (let i = 0; i < nData; ++i) {
-        cache.set(testKeys[i], testValues[i]);
+        cache.set({
+          key: testKeys[i],
+          value: testValues[i],
+        });
       }
       for (let i = 0, j = nData - 1; i < nData; ++i, --j) {
-        cache.set(testKeys[i], testValues[j]);
+        cache.set({
+          key: testKeys[i],
+          value: testValues[j],
+        });
+      }
+    }
+  });
+
+  it("should measure the time for " + nGets + " 'get' calls on LruCache (should not be much slower compared to LruMap)", () => {
+    const cache = getCache(VALUE_TYPE2);
+    for (let n = 0; n < nGetLoops; ++n) {
+      for (let i = 0; i < nData; ++i) {
+        cache.get(testKeys[i]);
       }
     }
   });
@@ -151,13 +198,18 @@ describe("Performance LruCache without listeners", () => {
     cache.setMaxSize(3);
     for (let n = 0; n < nLoops; ++n) {
       for (let i = 0; i < nData; ++i) {
-        cache.set(testKeys[i], testValues[i]);
+        cache.set({
+          key: testKeys[i],
+          value: testValues[i],
+        });
       }
       for (let i = 0, j = nData - 1; i < nData; ++i, --j) {
-        cache.set(testKeys[i], testValues[j]);
+        cache.set({
+          key: testKeys[i],
+          value: testValues[j],
+        });
       }
     }
   });
 
 });
-
