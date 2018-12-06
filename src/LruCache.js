@@ -380,6 +380,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   /** Like 'setAll', but returning a Promise that is executed in another event loop.
    * @memberof LruCache
    * @function
+   * @param {Array} keyValueAlternateKeysArray - array of objects with 'key', 'value' and optional 'alternateKeys'
    * @returns {Promise}
    */
   self.setAllAsync = asyncWrap(self.setAll);
@@ -400,6 +401,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   /** Like 'set', but returning a Promise that is executed in another event loop.
    * @memberof LruCache
    * @function
+   * @param {object} keyValueAlternateKeys - object with 'key' and 'value' and optional 'alternateKeys'
    * @returns {Promise}
    */
   self.setAsync = asyncWrap(self.set);
