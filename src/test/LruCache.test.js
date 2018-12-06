@@ -455,8 +455,6 @@ describe("registerCacheChangedHandler", () => {
     expect(changeObject[VALUE_TYPE_1].lruRemoves.length).toEqual(0);
     expect(changeObject[VALUE_TYPE_1].inserts.length).toEqual(0);
     expect(changeObject[VALUE_TYPE_1].deleteRemoves[0].key).toEqual("key1");
-    expect(changeObject[VALUE_TYPE_1].deleteRemoves[0].value).toEqual("value1 of type 1");
-    expect(changeObject[VALUE_TYPE_1].deleteRemoves[0].alternateKeys.has("myAltKey1")).toBeTruthy();
 
     handlerHandle.unregister();
     cache1.clear();

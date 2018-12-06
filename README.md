@@ -120,13 +120,42 @@ Method | Arguments | Returns | Description
 
 
 ### Cache Events <a name="cache-events-detail"></a>
-WIP
+* Especially in more complex UIs, there might be multiple models holding the same type of entity.
+* If an entity gets updated, you need a strategy to ensure all models get updated correspondingly.
+* Of course the developer implementing the update should not be required to know all models of all screens that might hold an entity of this type
+    * Even if he would know them it would be a nightmare, if he had to update all the models
+    * Even if he would update all the models, as soon as another developer changes one of the models half a year later, or adds a new model, the application would be broken
+* Like always in programming there are many different approaches to this problem. The event-based approach described here is just one of them (not necessarily the best, but if you need caching anyways, then it's handy to combine this):
+    * Whenever an updated entity is retrieved, it is put into the cache, leading to a corresponding cache event
+    * Whenever an entity is deleted, delete is also called on the cache, leading to a corresponding cache event
+    * Whenever a new model is implemented, it is registered for cache events for the object types it is holding
+    * Whenever a model receives a cache event, it can check whether it must replace or remove an entity
+
+Here is the structure of the cache change event argument:
+```javascript
+{
+    valueTypes: Set(),
+    <valueType>: {
+        inserts: [{key, value, alternateKeys, order}],
+        clearRemoves: [{key, value, alternateKeys, order}],
+        lruRemoves: [{key, value, alternateKeys, order}],
+        deleteRemoves: [{key}],
+    },
+    ...
+}
+```
+* The order can be used to determine, if an insert happened before or after a remove.
+* Note that by default, lruRemoves and clearRemoves are empty (usually these removes are not of any interest)
+* In case of a cache delete, the corresponding entity might not have been in the cache (being removed in a clear or by LRU logic).
+    * Thus, deleteRemoves only contain the key of the deleted entity.
+    * For the same reason, the delete method cannot be used with an alternate key, because there would be no way to tell if the given argument is key or alternate key
 
 ## Performance <a name="section-performance"></a>
 * Compared to a native Javascript Map, the LRU logic implies performance impact on get, set and delete. It's just the price to pay for having a LRU cache.
+* Also compared to LRU maps that do not support alternate keys, there is a performance impact on get in case of cache misses.
     * See [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/a03482ca34b4dd7decf6d6057e56c8a8cee7fb6e/performance-report.html)
-    * However, the methods are still O(1). (Only setMaxSize has O(size-newMaxSize), if size>newMaxSize)
-* Compared to a LRU cache without cache events, the is additional performance impact on get, set and delete.
+    * However, get, set and delete are still O(1). (setMaxSize has O(size-newMaxSize), if size>newMaxSize)
+* Compared to a LRU cache without cache events, there is additional performance impact on get, set and delete.
     * Again see [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/a03482ca34b4dd7decf6d6057e56c8a8cee7fb6e/performance-report.html)
     * However, if you are caching for performance, then because the fetching of values is significantly more time consuming. So whether you save 400ms or only 399ms hardly makes a difference here.
     * If you are not caching for performance reasons, but to have the change events, well than again it's just the price to pay for the event handling.

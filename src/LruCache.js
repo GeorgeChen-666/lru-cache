@@ -77,7 +77,7 @@ const hasActiveHandler = valueType => {
  *                       inserts: [{key, value, alternateKeys, order}],
  *                       clearRemoves: [{key, value, alternateKeys, order}],
  *                       lruRemoves: [{key, value, alternateKeys, order}],
- *                       deleteRemoves: [{key, value, alternateKeys, order}],
+ *                       deleteRemoves: [{key}],
  *                     },
  *                     ...
  *                   }
@@ -430,16 +430,20 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     return typeof entry === "undefined" ? entry : entry.value;
   };
 
-  /** Delete entry from cache by key or alternate key.
+  /** Delete entry from cache by key.
+   *  Here, no alternate key can be used.
    *  A corresponding cache changed event will be dispatched.
    * @memberof LruCache
    * @function
-   * @param {string} keyOrAlternateKey - The key or alternate key of the to be deleted value
+   * @param {string} key - The key of the to be deleted value
    * @returns {boolean} true, if the key was in the cache.
    */
-  self.delete = keyOrAlternateKey => {
-    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.getWithoutLruChange);
+  self.delete = key => {
+    const entry = entryGetter(key, alternateKeyToKey, lruMap.getWithoutLruChange);
     if (typeof entry === "undefined") {
+      wrapInTransaction(valueType, () => {
+        handleDeleteRemove(valueType, {key});
+      });
       return false;
     }
     lruMap.delete(entry.key);
@@ -449,7 +453,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     // It is important to wrap even single actions to get consistent behavior,
     // e.g. to always reset 'order', even after a delete
     wrapInTransaction(valueType, () => {
-      handleDeleteRemove(valueType, entry);
+      handleDeleteRemove(valueType, {key});
     });
     return true;
   };

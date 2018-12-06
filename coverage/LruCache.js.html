@@ -20,9 +20,9 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">93.53% </span>
+        <span class="strong">93.59% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>217/232</span>
+        <span class='fraction'>219/234</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">85.23% </span>
@@ -30,14 +30,14 @@
         <span class='fraction'>75/88</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">91.8% </span>
+        <span class="strong">91.94% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>56/61</span>
+        <span class='fraction'>57/62</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">93.36% </span>
+        <span class="strong">93.42% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>211/226</span>
+        <span class='fraction'>213/228</span>
       </div>
     </div>
   </div>
@@ -612,7 +612,11 @@
 567
 568
 569
-570</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+570
+571
+572
+573
+574</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -670,11 +674,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">79x</span>
+<span class="cline-any cline-yes">81x</span>
 <span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">60x</span>
-<span class="cline-any cline-yes">60x</span>
+<span class="cline-any cline-yes">62x</span>
+<span class="cline-any cline-yes">62x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -858,7 +862,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -876,16 +880,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">79x</span>
+<span class="cline-any cline-yes">81x</span>
 <span class="cline-any cline-yes">22x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">57x</span>
-<span class="cline-any cline-yes">57x</span>
-<span class="cline-any cline-yes">57x</span>
+<span class="cline-any cline-yes">59x</span>
+<span class="cline-any cline-yes">59x</span>
+<span class="cline-any cline-yes">59x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">57x</span>
+<span class="cline-any cline-yes">59x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1051,9 +1055,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
@@ -1260,7 +1268,7 @@ const hasActiveHandler = valueType =&gt; {
  *                       inserts: [{key, value, alternateKeys, order}],
  *                       clearRemoves: [{key, value, alternateKeys, order}],
  *                       lruRemoves: [{key, value, alternateKeys, order}],
- *                       deleteRemoves: [{key, value, alternateKeys, order}],
+ *                       deleteRemoves: [{key}],
  *                     },
  *                     ...
  *                   }
@@ -1613,16 +1621,20 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
 <span class="cstat-no" title="statement not covered" >    return typeof entry === "undefined" ? entry : entry.value;</span>
   };
 &nbsp;
-  /** Delete entry from cache by key or alternate key.
+  /** Delete entry from cache by key.
+   *  Here, no alternate key can be used.
    *  A corresponding cache changed event will be dispatched.
    * @memberof LruCache
    * @function
-   * @param {string} keyOrAlternateKey - The key or alternate key of the to be deleted value
+   * @param {string} key - The key of the to be deleted value
    * @returns {boolean} true, if the key was in the cache.
    */
-  self.delete = keyOrAlternateKey =&gt; {
-    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.getWithoutLruChange);
+  self.delete = key =&gt; {
+    const entry = entryGetter(key, alternateKeyToKey, lruMap.getWithoutLruChange);
     if (typeof entry === "undefined") {
+      wrapInTransaction(valueType, () =&gt; {
+        handleDeleteRemove(valueType, {key});
+      });
       return false;
     }
     lruMap.delete(entry.key);
@@ -1632,7 +1644,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     // It is important to wrap even single actions to get consistent behavior,
     // e.g. to always reset 'order', even after a delete
     wrapInTransaction(valueType, () =&gt; {
-      handleDeleteRemove(valueType, entry);
+      handleDeleteRemove(valueType, {key});
     });
     return true;
   };
@@ -1756,7 +1768,7 @@ export const clearAllCaches = <span class="fstat-no" title="function not covered
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Thu Dec 06 2018 22:32:39 GMT+0100 (Central European Standard Time)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Thu Dec 06 2018 23:24:54 GMT+0100 (Central European Standard Time)
 </div>
 </div>
 <script src="prettify.js"></script>
