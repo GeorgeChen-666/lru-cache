@@ -2,21 +2,37 @@
 A Javascript LRU-cache for node and/or browser, featuring:
 * LRU cache logic
 * Alternate keys
+* Value getter for cache fails
 * Singleton caches per value type
 * Event registry for cache change events
 * No dependencies
 
 ## Table of Contents
-1. [Installation](#section-installation)
-2. [Motivation](#section-motivation)
-3. [Basic Usage](#section-basic-usage)
-4. [Quality](#section-quality)
-5. [Develop](#section-develop)
-6. [Detailed Usage](#section-detailed-usage)
-7. [Performance](#section-performance)
-8. [Questions](#section-questions)
-9. [Roadmap](#section-roadmap)
+1. [What's New](#section-news)
+2. [Installation](#section-installation)
+3. [Motivation](#section-motivation)
+4. [Basic Usage](#section-basic-usage)
+5. [Quality](#section-quality)
+6. [Develop](#section-develop)
+7. [Detailed Usage](#section-detailed-usage)
+8. [Performance](#section-performance)
+9. [Questions](#section-questions)
+10. [Roadmap](#section-roadmap)
 
+
+## What's New <a name="section-news"></a>
+### Version 3.1.0
+* New LruCache method `setEntryGetter`
+    * Use it to set a function that provides a key-value-alternateKeys object (as expected by `set`)
+    * If in a call to `get` or `getWithoutLruChange`, the given key is not in the cache and an entryGetter is set, then the entry getter will be called
+        * In case of a synchronous entry getter, the returned entry will be inserted into the cache and the value is returned to the caller of the get method
+        * In case of an asynchronous entry getter, a Promise will be returned to the caller of the get method
+            * Subsequent calls to `get` or `getWithoutLruChange` will return the same Promise, until it is resolved
+            * The Promise resolves to the `entry.value` returned by the entry getter
+            * After the Promise resolved, the entry will be in the cache
+* New LruCache method `has`
+    * To test if a key or alternate key is in the cache
+    * Prior to 3.1.0, `getWithoutLruChange` could be used in all cases to test if a value is already cached. However, now the `has` method might be mandatory to do so in case an entry getter was set.
 
 ## Installation <a name="section-installation"></a>
 ```javascript
@@ -102,21 +118,23 @@ LruCache has the following methods:
 Method | Arguments | Returns | Description
 --- | --- | --- | ---
 `clear` | none | undefined | Invalidate the cache. If dispatchClearRemoves is set true for the cache, then a single event will be dispatched for the clear.
-`delete` | keyOrAlternateKey: string | wasInCache: boolean | Remove an entry from the cache. A corresponding cache event will be dispatched.
+`delete` | key: string | wasInCache: boolean | Remove an entry from the cache. A corresponding cache event will be dispatched. Here, no alternate key is allowed!
 `dispatchClearRemoves` | newValue: boolean | undefined | Set whether a cache clear should dispatch a cache event (default: false).
 `dispatchLruRemoves` | newValue: boolean | undefined | Set whether a LRU-remove (entry being removed due to exceeded cache size) should dispatch a cache event (default: false).
 `forEach` | callback: function | undefined | Iterate over the cache from olodest to newest value. Callback receives cache entry as argument, being an object with `key`, `value` and `alternateKeys`.
-`get` | keyOrAlternateKey: string | value | get cached value or undefined. The returned value will be made the newest value in the cache.
+`get` | keyOrAlternateKey: string | value | Get cached value or undefined. The returned value will be made the newest value in the cache. If an entry getter is set (see `setEntryGetter`), this getter will be used in case of a cache miss. If the entry getter is an async function, then a Promise will be returned that resolves to the value (Subsequent calls to get will return the same Promise until resolved, so the entry getter is called only once).
 `getEntries` | none | Array | Returns an array with all cache entries, order from oldest to newest.
 `getMaxSize` | none | Int | Returns the current max size of the cache.
 `getSize` | none | Int | Returns the number of entries in the cache.
 `getValueType` | none | string | Returns the value type of the cache.
 `getWithoutLruChange` | keyOrAlternateKey: string | value | Like `get`, but without making the entry the newest in the cache.
+`has` | keyOrAlternateKey: string | isInCache: boolean | True, if the key or alternate key is in the cache.
 `set` | keyValueAlternateKeys: object | undefined | Insert or update a value in the cache. The argument must be an object with `key` and `value`. Optionally it can also have `alternateKeys`, being string or array of strings. After set, the value will be the newest in the cache. Dispatches a corresponding cache event. If an insert exceeds the max cache size and dispatchLruRemoves is set true, it will be included in the event.
 `setAll` | Array\[keyValueAlternateKeys\] | undefined | Like `set`, but for an array of cache entries. Leading to a single cache event.
 `setAllAsync` | Array\[keyValueAlternateKeys\] | Promise | Like `setAll`, but performing insert and event dispatch in another event loop, resolving the returned promise afterwards.
-`set` | keyValueAlternateKeys: object | Promise | Like `set`, but performing insert and event dispatch in another event loop, resolving the returned promise afterwards.
-`setMaxSize` | newMaxSize | undefined | Change the max size of the cache (default: 500). If the new maxSize is less than the old and this leads to LRU-removes and dispatchLruRemoves is set true, then a single cache event will be dispatched.
+`setAsync` | keyValueAlternateKeys: object | Promise | Like `set`, but performing insert and event dispatch in another event loop, resolving the returned promise afterwards.
+`setEntryGetter` | entryGetter: function | undefined | Set a getter that can be used to retrieve a cache entry (keyValueAlternateKeys-object) by key in case it is not yet in the cache. For values that might be called by alternate key, the getter should also be able to handle this.
+`setMaxSize` | newMaxSize: int | undefined | Change the max size of the cache (default: 500). If the new maxSize is less than the old and this leads to LRU-removes and dispatchLruRemoves is set true, then a single cache event will be dispatched.
 
 
 ### Cache Events <a name="cache-events-detail"></a>

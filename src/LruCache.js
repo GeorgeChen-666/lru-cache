@@ -482,6 +482,8 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
   self.getWithoutLruChange = keyOrAlternateKey => internalGetter(keyOrAlternateKey, lruMap.getWithoutLruChange, true);
 
   /** Return whether the cache contains an entry for the given key or alternate key
+   * @memberof LruCache
+   * @function
    * @param {string} keyOrAlternateKey - The entry key or alternate key
    * @return {boolean} true, if the given key or alternate key is in the cache
    */
