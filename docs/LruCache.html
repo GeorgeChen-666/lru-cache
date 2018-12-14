@@ -274,7 +274,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line547">line 547</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line559">line 559</a>
     </li></ul></dd>
     
 
@@ -433,7 +433,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line507">line 507</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line519">line 519</a>
     </li></ul></dd>
     
 
@@ -856,7 +856,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line532">line 532</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line544">line 544</a>
     </li></ul></dd>
     
 
@@ -890,7 +890,7 @@
     
 
     
-    <h4 class="name" id=".self.get"><span class="type-signature">(static) </span>self.get<span class="signature">(keyOrAlternateKey)</span><span class="type-signature"> &rarr; {value|Promise|undefined}</span></h4>
+    <h4 class="name" id=".self.get"><span class="type-signature">(static) </span>self.get<span class="signature">(keyOrAlternateKey, notFromCache)</span><span class="type-signature"> &rarr; {value|Promise|undefined}</span></h4>
     
 
     
@@ -963,6 +963,31 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>notFromCache</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If true and an entry getter is set, then the value will not be taken from the
+                                cache, but from the entry getter. If no entry getter is set, an error will be
+                                thrown. (default: false)</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -1000,7 +1025,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line472">line 472</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line481">line 481</a>
     </li></ul></dd>
     
 
@@ -1114,7 +1139,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line539">line 539</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line551">line 551</a>
     </li></ul></dd>
     
 
@@ -1222,7 +1247,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line578">line 578</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line590">line 590</a>
     </li></ul></dd>
     
 
@@ -1330,7 +1355,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line564">line 564</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line576">line 576</a>
     </li></ul></dd>
     
 
@@ -1438,7 +1463,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line571">line 571</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line583">line 583</a>
     </li></ul></dd>
     
 
@@ -1494,7 +1519,7 @@
     
 
     
-    <h4 class="name" id=".self.getWithoutLruChange"><span class="type-signature">(static) </span>self.getWithoutLruChange<span class="signature">(keyOrAlternateKey)</span><span class="type-signature"> &rarr; {value|Promise|undefined}</span></h4>
+    <h4 class="name" id=".self.getWithoutLruChange"><span class="type-signature">(static) </span>self.getWithoutLruChange<span class="signature">(keyOrAlternateKey, notFromCache)</span><span class="type-signature"> &rarr; {value|Promise|undefined}</span></h4>
     
 
     
@@ -1560,6 +1585,31 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>notFromCache</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If true and an entry getter is set, then the value will not be taken from the
+                                cache, but from the entry getter. If no entry getter is set, an error will be
+                                thrown. (default: false)</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -1597,7 +1647,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line482">line 482</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line494">line 494</a>
     </li></ul></dd>
     
 
@@ -1760,7 +1810,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line490">line 490</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line502">line 502</a>
     </li></ul></dd>
     
 
@@ -2546,7 +2596,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line453">line 453</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line459">line 459</a>
     </li></ul></dd>
     
 
@@ -2704,7 +2754,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line587">line 587</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line599">line 599</a>
     </li></ul></dd>
     
 
@@ -2776,7 +2826,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 14 2018 17:56:41 GMT+0100 (Central European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 14 2018 23:16:45 GMT+0100 (Central European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

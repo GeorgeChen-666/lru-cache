@@ -122,12 +122,12 @@ Method | Arguments | Returns | Description
 `dispatchClearRemoves` | newValue: boolean | undefined | Set whether a cache clear should dispatch a cache event (default: false).
 `dispatchLruRemoves` | newValue: boolean | undefined | Set whether a LRU-remove (entry being removed due to exceeded cache size) should dispatch a cache event (default: false).
 `forEach` | callback: function | undefined | Iterate over the cache from olodest to newest value. Callback receives cache entry as argument, being an object with `key`, `value` and `alternateKeys`.
-`get` | keyOrAlternateKey: string | value | Get cached value or undefined. The returned value will be made the newest value in the cache. If an entry getter is set (see `setEntryGetter`), this getter will be used in case of a cache miss. If the entry getter is an async function, then a Promise will be returned that resolves to the value (Subsequent calls to get will return the same Promise until resolved, so the entry getter is called only once).
+`get` | keyOrAlternateKey: string, notFromCache: boolean (default: false) | value | Get cached value or undefined. The returned value will be made the newest value in the cache. If an entry getter is set (see `setEntryGetter`), this getter will be used in case of a cache miss. If the entry getter is an async function, then a Promise will be returned that resolves to the value (Subsequent calls to get will return the same Promise until resolved, so the entry getter is called only once). If notFromCache is set true, the value will be taken from entry getter, even if a value is already cached. If in this case no entry getter was set, a corresponding error will bethrown.
 `getEntries` | none | Array | Returns an array with all cache entries, order from oldest to newest.
 `getMaxSize` | none | Int | Returns the current max size of the cache.
 `getSize` | none | Int | Returns the number of entries in the cache.
 `getValueType` | none | string | Returns the value type of the cache.
-`getWithoutLruChange` | keyOrAlternateKey: string | value | Like `get`, but without making the entry the newest in the cache.
+`getWithoutLruChange` | keyOrAlternateKey: string, notFromCache: boolean (default: false) | value | Like `get`, but without making the entry the newest in the cache.
 `has` | keyOrAlternateKey: string | isInCache: boolean | True, if the key or alternate key is in the cache.
 `set` | keyValueAlternateKeys: object | undefined | Insert or update a value in the cache. The argument must be an object with `key` and `value`. Optionally it can also have `alternateKeys`, being string or array of strings. After set, the value will be the newest in the cache. Dispatches a corresponding cache event. If an insert exceeds the max cache size and dispatchLruRemoves is set true, it will be included in the event.
 `setAll` | Array\[keyValueAlternateKeys\] | undefined | Like `set`, but for an array of cache entries. Leading to a single cache event.

@@ -364,13 +364,52 @@ describe("LruCache", () => {
 
     expect(typeof cache.get("key1") === "object").toBeTruthy();
     expect(typeof cache.get("key1").then === "function").toBeTruthy();
-    const val = await cache.get("key1");
+    let val = await cache.get("key1");
     expect(typeof val).toEqual("undefined");
     expect(typeof cache.get("key1")).toEqual("object");
+    val = await cache.get("key1");
+    expect(typeof val).toEqual("undefined");
     // We must also ensure that the getter was called only once:
     expect(nCalls).toEqual(2);
 
     cache.setEntryGetter(null);
+    cache.clear();
+  });
+
+  it("should take the value from the entry getter and not from the cache, if specified in get", () => {
+    const type3GetterSync = key => ({
+      key,
+      value: key + "_value",
+      alternateKeys: [key + "_alternate"],
+    });
+
+    const cache = getCache(VALUE_TYPE_3);
+    cache.setEntryGetter(type3GetterSync);
+
+    cache.set({
+      key: "key1",
+      value: "value1",
+    });
+    expect(cache.get("key1")).toEqual("value1");
+    expect(cache.get("key1", true)).toEqual("key1_value");
+    expect(cache.get("key1")).toEqual("key1_value");
+
+    cache.setEntryGetter(null);
+    cache.clear();
+  });
+
+  it("should throw, if value should be taken from entry getter and no entry getter is defined", () => {
+    const cache = getCache(VALUE_TYPE_3);
+
+    cache.set({
+      key: "key1",
+      value: "value1",
+    });
+    expect(cache.get("key1")).toEqual("value1");
+    expect(() => {
+      cache.get("key1", true);
+    }).toThrow("called get with notFromCache, but no entry getter was set");
+
     cache.clear();
   });
 
