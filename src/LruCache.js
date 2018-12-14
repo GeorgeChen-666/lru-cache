@@ -405,7 +405,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
     if (typeof entry === "undefined" && alternateKeyToKey.has(key)) {
       entry = getter(alternateKeyToKey.get(key));
     }
-    if (typeof entry === "undefined") {
+    else if (typeof entry === "undefined") {
       if (useEntryGetter && entryGetter !== null) {
         if (keyToPromise.has(key)) {
           return keyToPromise.get(key);
@@ -422,9 +422,10 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
             if (keyToPromise.has(key)) {
               // The condition is necessary, because meanwhile there might have been a self.delete(key)
               self.set(keyValueAlternateKeysResolved);
-              keyToPromise.delete(key); // important to use key and not keyValueAlternateKeysResolved.key, because key could also be an alternate key!
             }
             return keyValueAlternateKeysResolved.value;
+          }).finally(() => {
+            keyToPromise.delete(key); // important to use key and not keyValueAlternateKeysResolved.key, because key could also be an alternate key!
           });
           keyToPromise.set(key, promise);
           return promise;
@@ -438,9 +439,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
         return entry;
       }
     }
-    else {
-      return entry.value;
-    }
+    return entry.value;
   };
 
   /** Set a getter that can be used to retrieve a cache entry (keyValueAlternateKeys-object) by key in
@@ -481,6 +480,19 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @returns {value | Promise | undefined} value, promised value or undefined
    */
   self.getWithoutLruChange = keyOrAlternateKey => internalGetter(keyOrAlternateKey, lruMap.getWithoutLruChange, true);
+
+  /** Return whether the cache contains an entry for the given key or alternate key
+   * @param {string} keyOrAlternateKey - The entry key or alternate key
+   * @return {boolean} true, if the given key or alternate key is in the cache
+   */
+  self.has = keyOrAlternateKey => {
+    if (lruMap.has(keyOrAlternateKey)) {
+      return true;
+    }
+    else {
+      return alternateKeyToKey.has(keyOrAlternateKey);
+    }
+  };
 
   /** Delete entry from cache by key.
    *  Here, no alternate key can be used.

@@ -166,6 +166,12 @@ export function LruMap(maxSize = null) {
     return typeof entry === "undefined" ? entry : entry.value;
   };
 
+  /** Return whether the LruMap contains key
+   * @param {string} key - The entry key
+   * @return {boolean} true, if the given key is in the LruMap
+   */
+  self.has = key => keyToEntry.has(key);
+
   /** Remove the entry with the given key from the map. Returns false, in case the key was not in the map
    * @param {string} key - The entry key
    * @return {boolean} true in case the key existed in the Map

@@ -4,6 +4,7 @@ import {
   getCache,
   cacheTransaction,
   registerCacheChangedHandler,
+  clearAllCaches,
 } from "../LruCache";
 
 const VALUE_TYPE_1 = "valueType1";
@@ -42,7 +43,7 @@ describe("LruCache", () => {
     cache1.clear();
   });
 
-  it("should allow to pass an array of alternate keys to 'set' method. 'get' must also work with the alternate key", () => {
+  it("should allow to pass an array of alternate keys to 'set' method. 'get' and 'has' must also work with the alternate key", () => {
     const cache1 = getCache(VALUE_TYPE_1);
 
     cache1.set({
@@ -53,6 +54,9 @@ describe("LruCache", () => {
     expect(cache1.get("myAltKey1")).toEqual("value1 of type 1");
     expect(cache1.get("myAltKey2")).toEqual("value1 of type 1");
     expect(typeof cache1.get("myAltKey3")).toEqual("undefined");
+    expect(cache1.has("key1")).toBeTruthy();
+    expect(cache1.has("myAltKey2")).toBeTruthy();
+    expect(cache1.has("myAltKey3")).toBeFalsy();
 
     cache1.clear();
   });
@@ -318,7 +322,7 @@ describe("LruCache", () => {
     cache.clear();
   });
 
-  it("should provide a method to define an entry async getter that is used in case of a cache miss", () => {
+  it("should provide a method to define an entry async getter that is used in case of a cache miss", async () => {
     let nCalls = 0;
     const type3GetterAsync = key => new Promise(resolve => {
       nCalls += 1;
@@ -336,12 +340,35 @@ describe("LruCache", () => {
 
     expect(typeof cache.get("key1") === "object").toBeTruthy();
     expect(typeof cache.get("key1").then === "function").toBeTruthy();
-    cache.get("key1").then(val => {
-      expect(val).toEqual("key1_value");
-      expect(cache.get("key1")).toEqual("key1_value");
-      // We must also ensure that the getter was called only once:
-      expect(nCalls).toEqual(1);
+    const val = await cache.get("key1");
+    expect(val).toEqual("key1_value");
+    expect(cache.get("key1")).toEqual("key1_value");
+    // We must also ensure that the getter was called only once:
+    expect(nCalls).toEqual(1);
+
+    cache.setEntryGetter(null);
+    cache.clear();
+  });
+
+  it("should handle the case where a getter returns undefined", async () => {
+    let nCalls = 0;
+    const type3GetterAsync = () => new Promise(resolve => {
+      nCalls += 1;
+      setTimeout(() => {
+        resolve(undefined); // eslint-disable-line no-undefined
+      }, 200)
     });
+
+    const cache = getCache(VALUE_TYPE_3);
+    cache.setEntryGetter(type3GetterAsync);
+
+    expect(typeof cache.get("key1") === "object").toBeTruthy();
+    expect(typeof cache.get("key1").then === "function").toBeTruthy();
+    const val = await cache.get("key1");
+    expect(typeof val).toEqual("undefined");
+    expect(typeof cache.get("key1")).toEqual("object");
+    // We must also ensure that the getter was called only once:
+    expect(nCalls).toEqual(2);
 
     cache.setEntryGetter(null);
     cache.clear();
@@ -372,6 +399,45 @@ describe("getCache", () => {
     expect(typeof cache3.get("key1")).toEqual("undefined");
 
     cache2.clear();
+  });
+});
+
+
+describe("clearAllCaches", () => {
+  it("should clear all caches", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+    const cache2 = getCache(VALUE_TYPE_2);
+
+    cache1.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 1",
+        alternateKeys: ["myAltKey1"],
+      },
+      {
+        key: "key2",
+        value: "value2 of type 1",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+    cache2.setAll([
+      {
+        key: "key1",
+        value: "value1 of type 2",
+        alternateKeys: ["myAltKey1"],
+      },
+      {
+        key: "key2",
+        value: "value2 of type 2",
+        alternateKeys: "myAltKey2",
+      },
+    ]);
+
+    expect(cache1.get("key1")).toEqual("value1 of type 1");
+    expect(cache2.get("key1")).toEqual("value1 of type 2");
+    clearAllCaches();
+    expect(typeof cache1.get("key1")).toEqual("undefined");
+    expect(typeof cache2.get("key1")).toEqual("undefined");
   });
 });
 
@@ -475,6 +541,35 @@ describe("registerCacheChangedHandler", () => {
     expect(changeObject[VALUE_TYPE_1].inserts[0].key).toEqual("key1");
     expect(changeObject[VALUE_TYPE_1].inserts[0].value).toEqual("value1 of type 1");
     expect(changeObject[VALUE_TYPE_1].inserts[0].alternateKeys.has("myAltKey1")).toBeTruthy();
+
+    handlerHandle.unregister();
+    cache1.clear();
+  });
+
+  it("should throw an error in case of throwing change handlers, but still keep the cache consistent", () => {
+    const cache1 = getCache(VALUE_TYPE_1);
+
+    const handlerHandle = registerCacheChangedHandler(() => {
+      throw new Error("this is a test");
+    });
+
+    expect(() => {
+      cache1.setAll([
+        {
+          key: "key1",
+          value: "value1 of type 1",
+          alternateKeys: "myAltKey1",
+        },
+        {
+          key: "key2",
+          value: "value2 of type 1",
+          alternateKeys: "myAltKey2",
+        },
+      ])
+    }).toThrow("handleTransactionChangeObject: 1 of 1 handlers threw an error: this is a test, ");
+    expect(cache1.get("key1")).toEqual("value1 of type 1");
+    expect(cache1.get("key2")).toEqual("value2 of type 1");
+    expect(cache1.get("myAltKey1")).toEqual("value1 of type 1");
 
     handlerHandle.unregister();
     cache1.clear();

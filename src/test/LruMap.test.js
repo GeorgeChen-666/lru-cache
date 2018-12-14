@@ -10,13 +10,15 @@ describe("LruMap", () => {
     expect(lruMap.getMaxSize()).toEqual(size);
   });
 
-  it("should provide set and get methods like a Map", () => {
+  it("should provide set, get and has methods like a Map", () => {
     const lruMap = LruMap();
     lruMap.set("key1", "value1");
     expect(lruMap.get("key1")).toEqual("value1");
     lruMap.set("key1", "value1_modified");
     expect(lruMap.get("key1")).toEqual("value1_modified");
     expect(typeof lruMap.get("key2")).toEqual("undefined");
+    expect(lruMap.has("key1")).toBeTruthy();
+    expect(lruMap.has("key2")).toBeFalsy();
   });
 
   it("should let the set method return the removed entry in case maxSize was exceeded, else null", () => {
