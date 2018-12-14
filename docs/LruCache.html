@@ -167,7 +167,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line332">line 332</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line324">line 324</a>
     </li></ul></dd>
     
 
@@ -274,7 +274,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line481">line 481</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line533">line 533</a>
     </li></ul></dd>
     
 
@@ -433,7 +433,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line441">line 441</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line493">line 493</a>
     </li></ul></dd>
     
 
@@ -590,7 +590,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line362">line 362</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line354">line 354</a>
     </li></ul></dd>
     
 
@@ -747,7 +747,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line352">line 352</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line344">line 344</a>
     </li></ul></dd>
     
 
@@ -856,7 +856,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line466">line 466</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line518">line 518</a>
     </li></ul></dd>
     
 
@@ -890,7 +890,7 @@
     
 
     
-    <h4 class="name" id=".self.get"><span class="type-signature">(static) </span>self.get<span class="signature">(keyOrAlternateKey)</span><span class="type-signature"> &rarr; {object|undefined}</span></h4>
+    <h4 class="name" id=".self.get"><span class="type-signature">(static) </span>self.get<span class="signature">(keyOrAlternateKey)</span><span class="type-signature"> &rarr; {value|Promise|undefined}</span></h4>
     
 
     
@@ -899,7 +899,14 @@
 
 <div class="description">
     Get value from cache by either its key or one of its alternate keys (if exists).
- Returns undefined, if not in cache.
+ If the value is not found in the cache and an entry-getter was set via setEntryGetter, then:
+    - If the entry getter returns a Promise, a Promise resolving to the value will be returned.
+      When the Promise resolves, the entry will be set to the cache. Until the Promise is not resolved,
+      subsequent calls to get will return the same Promise.
+    - If the entry getter returns a cache entry (keyValueAlternateKeys-object), this will be set to the cache
+      and the value will be returned.
+    - If the entry getter returns null or undefined, undefined will be returned.
+ If the key is not in the cache and no entry getter is set, undefined will be returned.
  Makes the corresponding entry the most recently used (use 'getWithoutLruChange' to avoid this).
 </div>
 
@@ -993,7 +1000,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line417">line 417</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line473">line 473</a>
     </li></ul></dd>
     
 
@@ -1020,7 +1027,7 @@
 
         
 <div class="param-desc">
-    object, if the key is in cache, else undefined
+    value, promised value or undefined
 </div>
 
 
@@ -1031,7 +1038,10 @@
     </dt>
     <dd>
         
-<span class="param-type">object</span>
+<span class="param-type">value</span>
+|
+
+<span class="param-type">Promise</span>
 |
 
 <span class="param-type">undefined</span>
@@ -1104,7 +1114,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line473">line 473</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line525">line 525</a>
     </li></ul></dd>
     
 
@@ -1212,7 +1222,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line512">line 512</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line564">line 564</a>
     </li></ul></dd>
     
 
@@ -1320,7 +1330,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line498">line 498</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line550">line 550</a>
     </li></ul></dd>
     
 
@@ -1428,7 +1438,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line505">line 505</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line557">line 557</a>
     </li></ul></dd>
     
 
@@ -1484,7 +1494,7 @@
     
 
     
-    <h4 class="name" id=".self.getWithoutLruChange"><span class="type-signature">(static) </span>self.getWithoutLruChange<span class="signature">(keyOrAlternateKey)</span><span class="type-signature"> &rarr; {object|undefined}</span></h4>
+    <h4 class="name" id=".self.getWithoutLruChange"><span class="type-signature">(static) </span>self.getWithoutLruChange<span class="signature">(keyOrAlternateKey)</span><span class="type-signature"> &rarr; {value|Promise|undefined}</span></h4>
     
 
     
@@ -1493,6 +1503,8 @@
 
 <div class="description">
     Like 'get', but not making the corresponding entry the most recently used.
+ If the value is retrieved via entry getter, it will of course still become the
+ most recently used.
 </div>
 
 
@@ -1585,7 +1597,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line428">line 428</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line483">line 483</a>
     </li></ul></dd>
     
 
@@ -1612,7 +1624,7 @@
 
         
 <div class="param-desc">
-    object, if the key is in cache, else undefined
+    value, promised value or undefined
 </div>
 
 
@@ -1623,7 +1635,10 @@
     </dt>
     <dd>
         
-<span class="param-type">object</span>
+<span class="param-type">value</span>
+|
+
+<span class="param-type">Promise</span>
 |
 
 <span class="param-type">undefined</span>
@@ -1748,7 +1763,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line397">line 397</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line389">line 389</a>
     </li></ul></dd>
     
 
@@ -1909,7 +1924,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line376">line 376</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line368">line 368</a>
     </li></ul></dd>
     
 
@@ -2066,7 +2081,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line386">line 386</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line378">line 378</a>
     </li></ul></dd>
     
 
@@ -2219,7 +2234,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line407">line 407</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line399">line 399</a>
     </li></ul></dd>
     
 
@@ -2254,6 +2269,165 @@
     <dd>
         
 <span class="param-type">Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".self.setEntryGetter"><span class="type-signature">(static) </span>self.setEntryGetter<span class="signature">(newEntryGetter)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Set a getter that can be used to retrieve a cache entry (keyValueAlternateKeys-object) by key in
+ case it is not yet in the cache.
+ For values that might be called by alternate key, the getter should also be able to handle this.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>newEntryGetter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">function that takes a key as argument and returns corresponding entry or promise</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line454">line 454</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    void
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">undefined</span>
 
 
     </dd>
@@ -2373,7 +2547,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line521">line 521</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line573">line 573</a>
     </li></ul></dd>
     
 
@@ -2445,7 +2619,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Dec 06 2018 23:32:04 GMT+0100 (Central European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 14 2018 15:57:58 GMT+0100 (Central European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

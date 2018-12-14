@@ -8,6 +8,7 @@ import {
 
 const VALUE_TYPE_1 = "valueType1";
 const VALUE_TYPE_2 = "valueType2";
+const VALUE_TYPE_3 = "valueType3";
 const DEFAULT_CACHE_SIZE = 500;
 
 
@@ -209,7 +210,7 @@ describe("LruCache", () => {
     expect(cache1.getSize()).toEqual(0);
   });
 
-  it("should provide a 'delete' method that works with key or alternate key", () => {
+  it("should provide a 'delete' method that works with key, but not with alternate key", () => {
     const cache1 = getCache(VALUE_TYPE_1);
 
     cache1.setAll([
@@ -231,8 +232,8 @@ describe("LruCache", () => {
     const deleteResult4 = cache1.delete("key2");
     expect(deleteResult1).toBeTruthy();
     expect(deleteResult2).toBeFalsy();
-    expect(deleteResult3).toBeTruthy();
-    expect(deleteResult4).toBeFalsy();
+    expect(deleteResult3).toBeFalsy();
+    expect(deleteResult4).toBeTruthy();
     expect(cache1.getSize()).toEqual(0);
 
     cache1.clear();
@@ -293,6 +294,57 @@ describe("LruCache", () => {
     expect(entries[1].alternateKeys.has("myAltKey1")).toBeTruthy();
 
     cache1.clear();
+  });
+
+  it("should provide a method to define an entry getter that is used in case of a cache miss", () => {
+    const type3GetterSync = key => ({
+      key,
+      value: key + "_value",
+      alternateKeys: [key + "_alternate"],
+    });
+
+    const cache = getCache(VALUE_TYPE_3);
+    cache.setEntryGetter(type3GetterSync);
+
+    cache.set({
+      key: "key1",
+      value: "value1",
+    });
+    expect(cache.get("key1")).toEqual("value1");
+    expect(cache.get("key2")).toEqual("key2_value");
+    expect(cache.get("key2_alternate")).toEqual("key2_value");
+
+    cache.setEntryGetter(null);
+    cache.clear();
+  });
+
+  it("should provide a method to define an entry async getter that is used in case of a cache miss", () => {
+    let nCalls = 0;
+    const type3GetterAsync = key => new Promise(resolve => {
+      nCalls += 1;
+      setTimeout(() => {
+        resolve({
+          key,
+          value: key + "_value",
+          alternateKeys: [key + "_alternate"],
+        });
+      }, 200)
+    });
+
+    const cache = getCache(VALUE_TYPE_3);
+    cache.setEntryGetter(type3GetterAsync);
+
+    expect(typeof cache.get("key1") === "object").toBeTruthy();
+    expect(typeof cache.get("key1").then === "function").toBeTruthy();
+    cache.get("key1").then(val => {
+      expect(val).toEqual("key1_value");
+      expect(cache.get("key1")).toEqual("key1_value");
+      // We must also ensure that the getter was called only once:
+      expect(nCalls).toEqual(1);
+    });
+
+    cache.setEntryGetter(null);
+    cache.clear();
   });
 
 });

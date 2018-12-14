@@ -321,14 +321,6 @@ const setAll = (valueType, lruMap, alternateKeyToKey, keyValueAlternateKeysArray
   });
 };
 
-const entryGetter = (key, alternateKeyToKey, getter) => {
-  let entry = getter(key);
-  if (typeof entry === "undefined" && alternateKeyToKey.has(key)) {
-    entry = getter(alternateKeyToKey.get(key));
-  }
-  return entry;
-};
-
 /** Cannot be instantiated directly! Use 'getCache' to get a cache instance.
  *  By default, cache events are dispatched only for inserts/updates and deletes.
  *  To dispatch also LRU removes and/or clear removes, use the corresponding setters.
@@ -406,29 +398,89 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    */
   self.setAsync = asyncWrap(self.set);
 
+  let entryGetter = null;
+  const keyToPromise = new Map();
+  const internalGetter = (key, getter, useEntryGetter = false) => {
+    let entry = getter(key);
+    if (typeof entry === "undefined" && alternateKeyToKey.has(key)) {
+      entry = getter(alternateKeyToKey.get(key));
+    }
+    if (typeof entry === "undefined") {
+      if (useEntryGetter && entryGetter !== null) {
+        if (keyToPromise.has(key)) {
+          return keyToPromise.get(key);
+        }
+        const keyValueAlternateKeys = entryGetter(key);
+        if (!keyValueAlternateKeys) {
+          return entry;
+        }
+        if (typeof keyValueAlternateKeys.then === "function") {
+          const promise = keyValueAlternateKeys.then(keyValueAlternateKeysResolved => {
+            if (!keyValueAlternateKeysResolved) {
+              return keyValueAlternateKeysResolved;
+            }
+            if (keyToPromise.has(key)) {
+              // The condition is necessary, because meanwhile there might have been a self.delete(key)
+              self.set(keyValueAlternateKeysResolved);
+              keyToPromise.delete(key); // important to use key and not keyValueAlternateKeysResolved.key, because key could also be an alternate key!
+            }
+            return keyValueAlternateKeysResolved.value;
+          });
+          keyToPromise.set(key, promise);
+          return promise;
+        }
+        else {
+          self.set(keyValueAlternateKeys);
+          return keyValueAlternateKeys.value;
+        }
+      }
+      else {
+        return entry;
+      }
+    }
+    else {
+      return entry.value;
+    }
+  };
+
+  /** Set a getter that can be used to retrieve a cache entry (keyValueAlternateKeys-object) by key in
+   *  case it is not yet in the cache.
+   *  For values that might be called by alternate key, the getter should also be able to handle this.
+   * @memberof LruCache
+   * @function
+   * @param {function} newEntryGetter - function that takes a key as argument and returns corresponding entry or promise
+   * @returns {undefined} void
+   */
+  self.setEntryGetter = newEntryGetter => {
+    entryGetter = newEntryGetter;
+  };
+
   /** Get value from cache by either its key or one of its alternate keys (if exists).
-   *  Returns undefined, if not in cache.
+   *  If the value is not found in the cache and an entry-getter was set via setEntryGetter, then:
+   *     - If the entry getter returns a Promise, a Promise resolving to the value will be returned.
+   *       When the Promise resolves, the entry will be set to the cache. Until the Promise is not resolved,
+   *       subsequent calls to get will return the same Promise.
+   *     - If the entry getter returns a cache entry (keyValueAlternateKeys-object), this will be set to the cache
+   *       and the value will be returned.
+   *     - If the entry getter returns null or undefined, undefined will be returned.
+   *  If the key is not in the cache and no entry getter is set, undefined will be returned.
    *  Makes the corresponding entry the most recently used (use 'getWithoutLruChange' to avoid this).
    * @memberof LruCache
    * @function
    * @param {string} keyOrAlternateKey - The key or alternate key of the value
-   * @returns {object | undefined} object, if the key is in cache, else undefined
+   * @returns {value | Promise | undefined} value, promised value or undefined
    */
-  self.get = keyOrAlternateKey => {
-    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.get);
-    return typeof entry === "undefined" ? entry : entry.value;
-  };
+  self.get = keyOrAlternateKey => internalGetter(keyOrAlternateKey, lruMap.get, true);
 
   /** Like 'get', but not making the corresponding entry the most recently used.
+   *  If the value is retrieved via entry getter, it will of course still become the
+   *  most recently used.
    * @memberof LruCache
    * @function
    * @param {string} keyOrAlternateKey - The key or alternate key of the value
-   * @returns {object | undefined} object, if the key is in cache, else undefined
+   * @returns {value | Promise | undefined} value, promised value or undefined
    */
-  self.getWithoutLruChange = keyOrAlternateKey => {
-    const entry = entryGetter(keyOrAlternateKey, alternateKeyToKey, lruMap.getWithoutLruChange);
-    return typeof entry === "undefined" ? entry : entry.value;
-  };
+  self.getWithoutLruChange = keyOrAlternateKey => internalGetter(keyOrAlternateKey, lruMap.getWithoutLruChange, true);
 
   /** Delete entry from cache by key.
    *  Here, no alternate key can be used.
@@ -439,7 +491,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @returns {boolean} true, if the key was in the cache.
    */
   self.delete = key => {
-    const entry = entryGetter(key, alternateKeyToKey, lruMap.getWithoutLruChange);
+    const entry = lruMap.getWithoutLruChange(key);
     if (typeof entry === "undefined") {
       wrapInTransaction(valueType, () => {
         handleDeleteRemove(valueType, {key});
