@@ -191,14 +191,14 @@ Garbage collected languages without weak references make the use of some pattern
 
 ## Roadmap <a name="section-roadmap"></a>
 
-### 3.0.x
+### 3.1.x
 * Fix issues that might occur
 * Improve README
 * Bring test coverage two 100%
 * Add further performance tests
 
-### 3.1.0
+### 3.2.0
 * Add option to use LruMap instead of LruCache (the LruMap is a currently not exported pure LRU cache, while the LruCache is a wrapper adding the event handling)
 
-### 3.2.0
+### 3.3.0
 * Make shape and content of change events configurable (with the current shape being used as default).
