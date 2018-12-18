@@ -21,6 +21,10 @@ A Javascript LRU-cache for node and/or browser, featuring:
 
 
 ## What's New <a name="section-news"></a>
+### Version 3.2.0
+* LruCache methods `get` and `getWithoutLruChange` now take custom entry getter as optional third argument.
+    * If provided, a custom entry getter takes precedence over one set by `setEntryGetter`
+
 ### Version 3.1.0
 * New LruCache method `setEntryGetter`
     * Use it to set a function that provides a key-value-alternateKeys object (as expected by `set`)
@@ -69,7 +73,7 @@ if (!user) {
 * For the same value type (here "User"), getCache will always return the same cache instance.
 * For detailed description of all cache methods, have a look at
     * [Detailed Usage](#caching-detail)
-    * [JSDoc](https://rawcdn.githack.com/gneu77/lru-cache/6e4c5425a8aaf7c311dad8ccd1a4150285a38b0e/docs/index.html)
+    * [JSDoc](https://rawcdn.githack.com/gneu77/lru-cache/f5eded25881c8c2e143d7338b427fe28a223d2b9/docs/index.html)
 
 ### Cache Events
 To register for all cache change events
@@ -82,12 +86,12 @@ registerCacheChangedHandler(changeObject => {
 ```
 * For detailed description of all cache methods, have a look at
     * [Detailed Usage](#cache-events-detail)
-    * [JSDoc](https://rawcdn.githack.com/gneu77/lru-cache/6e4c5425a8aaf7c311dad8ccd1a4150285a38b0e/docs/index.html)
+    * [JSDoc](https://rawcdn.githack.com/gneu77/lru-cache/f5eded25881c8c2e143d7338b427fe28a223d2b9/docs/index.html)
 
 ## Quality <a name="section-quality"></a>
-* [Test results](https://rawcdn.githack.com/gneu77/lru-cache/6e4c5425a8aaf7c311dad8ccd1a4150285a38b0e/test-report.html)
-* [Test coverage](https://rawcdn.githack.com/gneu77/lru-cache/6e4c5425a8aaf7c311dad8ccd1a4150285a38b0e/coverage/index.html)
-* [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/6e4c5425a8aaf7c311dad8ccd1a4150285a38b0e/performance-report.html)
+* [Test results](https://rawcdn.githack.com/gneu77/lru-cache/f5eded25881c8c2e143d7338b427fe28a223d2b9/test-report.html)
+* [Test coverage](https://rawcdn.githack.com/gneu77/lru-cache/f5eded25881c8c2e143d7338b427fe28a223d2b9/coverage/index.html)
+* [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/f5eded25881c8c2e143d7338b427fe28a223d2b9/performance-report.html)
 
 ## Develop <a name="section-develop"></a>
 ```javascript
@@ -122,12 +126,12 @@ Method | Arguments | Returns | Description
 `dispatchClearRemoves` | newValue: boolean | undefined | Set whether a cache clear should dispatch a cache event (default: false).
 `dispatchLruRemoves` | newValue: boolean | undefined | Set whether a LRU-remove (entry being removed due to exceeded cache size) should dispatch a cache event (default: false).
 `forEach` | callback: function | undefined | Iterate over the cache from olodest to newest value. Callback receives cache entry as argument, being an object with `key`, `value` and `alternateKeys`.
-`get` | keyOrAlternateKey: string, notFromCache: boolean (default: false) | value | Get cached value or undefined. The returned value will be made the newest value in the cache. If an entry getter is set (see `setEntryGetter`), this getter will be used in case of a cache miss. If the entry getter is an async function, then a Promise will be returned that resolves to the value (Subsequent calls to get will return the same Promise until resolved, so the entry getter is called only once). If notFromCache is set true, the value will be taken from entry getter, even if a value is already cached. If in this case no entry getter was set, a corresponding error will bethrown.
+`get` | keyOrAlternateKey: string, notFromCache: boolean (default: false), customEntryGetter: function (default: null) | value | Get cached value or undefined. The returned value will be made the newest value in the cache. If an entry getter is set (see `setEntryGetter`), this getter will be used in case of a cache miss. If the entry getter is an async function, then a Promise will be returned that resolves to the value (Subsequent calls to get will return the same Promise until resolved, so the entry getter is called only once). If notFromCache is set true, the value will be taken from entry getter, even if a value is already cached. If in this case no entry getter was set, a corresponding error will be thrown. A custom entry getter can also be specified as optional third argument.
 `getEntries` | none | Array | Returns an array with all cache entries, order from oldest to newest.
 `getMaxSize` | none | Int | Returns the current max size of the cache.
 `getSize` | none | Int | Returns the number of entries in the cache.
 `getValueType` | none | string | Returns the value type of the cache.
-`getWithoutLruChange` | keyOrAlternateKey: string, notFromCache: boolean (default: false) | value | Like `get`, but without making the entry the newest in the cache.
+`getWithoutLruChange` | keyOrAlternateKey: string, notFromCache: boolean (default: false), customEntryGetter: function (default: null) | value | Like `get`, but without making the entry the newest in the cache.
 `has` | keyOrAlternateKey: string | isInCache: boolean | True, if the key or alternate key is in the cache.
 `set` | keyValueAlternateKeys: object | undefined | Insert or update a value in the cache. The argument must be an object with `key` and `value`. Optionally it can also have `alternateKeys`, being string or array of strings. After set, the value will be the newest in the cache. Dispatches a corresponding cache event. If an insert exceeds the max cache size and dispatchLruRemoves is set true, it will be included in the event.
 `setAll` | Array\[keyValueAlternateKeys\] | undefined | Like `set`, but for an array of cache entries. Leading to a single cache event.
@@ -171,10 +175,10 @@ Here is the structure of the cache change event argument:
 ## Performance <a name="section-performance"></a>
 * Compared to a native Javascript Map, the LRU logic implies performance impact on get, set and delete. It's just the price to pay for having a LRU cache.
 * Also compared to LRU maps that do not support alternate keys, there is a performance impact on get in case of cache misses.
-    * See [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/6e4c5425a8aaf7c311dad8ccd1a4150285a38b0e/performance-report.html)
+    * See [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/f5eded25881c8c2e143d7338b427fe28a223d2b9/performance-report.html)
     * However, get, set and delete are still O(1). (setMaxSize has O(size-newMaxSize), if size>newMaxSize)
 * Compared to a LRU cache without cache events, there is additional performance impact on get, set and delete.
-    * Again see [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/6e4c5425a8aaf7c311dad8ccd1a4150285a38b0e/performance-report.html)
+    * Again see [Performance tests](https://rawcdn.githack.com/gneu77/lru-cache/f5eded25881c8c2e143d7338b427fe28a223d2b9/performance-report.html)
     * However, if you are caching for performance, then because the fetching of values is significantly more time consuming. So whether you save 400ms or only 399ms hardly makes a difference here.
     * If you are not caching for performance reasons, but to have the change events, well than again it's just the price to pay for the event handling.
 
@@ -191,14 +195,14 @@ Garbage collected languages without weak references make the use of some pattern
 
 ## Roadmap <a name="section-roadmap"></a>
 
-### 3.1.x
+### 3.2.x
 * Fix issues that might occur
 * Improve README
 * Bring test coverage two 100%
 * Add further performance tests
 
-### 3.2.0
+### 3.3.0
 * Add option to use LruMap instead of LruCache (the LruMap is a currently not exported pure LRU cache, while the LruCache is a wrapper adding the event handling)
 
-### 3.3.0
+### 3.4.0
 * Make shape and content of change events configurable (with the current shape being used as default).

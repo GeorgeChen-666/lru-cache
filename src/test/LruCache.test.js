@@ -322,7 +322,7 @@ describe("LruCache", () => {
     cache.clear();
   });
 
-  it("should provide a method to define an entry async getter that is used in case of a cache miss", async () => {
+  it("should provide a method to define an async entry getter that is used in case of a cache miss", async () => {
     let nCalls = 0;
     const type3GetterAsync = key => new Promise(resolve => {
       nCalls += 1;
@@ -410,6 +410,39 @@ describe("LruCache", () => {
       cache.get("key1", true);
     }).toThrow("called get with notFromCache, but no entry getter was set");
 
+    cache.clear();
+  });
+
+  it("should be possible to override a set entry getter by passing a custom one to the get method", () => {
+    const type3GetterSync = key => ({
+      key,
+      value: key + "_value",
+      alternateKeys: [key + "_alternate"],
+    });
+
+    const customType3GetterSync = key => ({
+      key,
+      value: key + "_value_custom",
+      alternateKeys: [key + "_alternate"],
+    });
+
+    const cache = getCache(VALUE_TYPE_3);
+    cache.setEntryGetter(type3GetterSync);
+
+    cache.set({
+      key: "key1",
+      value: "value1",
+    });
+    expect(cache.get("key1")).toEqual("value1");
+    expect(cache.get("key2")).toEqual("key2_value");
+    expect(cache.get("key2_alternate")).toEqual("key2_value");
+    expect(cache.get("key2", false, customType3GetterSync)).toEqual("key2_value");
+    expect(cache.get("key2_alternate", false, customType3GetterSync)).toEqual("key2_value");
+    expect(cache.get("key2", true, customType3GetterSync)).toEqual("key2_value_custom");
+    expect(cache.get("key2")).toEqual("key2_value_custom");
+    expect(cache.get("key2_alternate")).toEqual("key2_value_custom");
+
+    cache.setEntryGetter(null);
     cache.clear();
   });
 

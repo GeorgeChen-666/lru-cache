@@ -49,9 +49,7 @@
 
 
 <div class="description">
-    Cannot be instantiated directly! Use 'getCache' to get a cache instance.
- By default, cache events are dispatched only for inserts/updates and deletes.
- To dispatch also LRU removes and/or clear removes, use the corresponding setters.
+    Cannot be instantiated directly! Use 'getCache' to get a cache instance. By default, cache events are dispatched only for inserts/updates and deletes. To dispatch also LRU removes and/or clear removes, use the corresponding setters.
 </div>
 
 
@@ -229,8 +227,7 @@
 
 
 <div class="description">
-    Clear the cache.
- A corresponding cache changed event will be dispatched.
+    Clear the cache. A corresponding cache changed event will be dispatched.
 </div>
 
 
@@ -274,7 +271,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line559">line 559</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line567">line 567</a>
     </li></ul></dd>
     
 
@@ -338,9 +335,7 @@
 
 
 <div class="description">
-    Delete entry from cache by key.
- Here, no alternate key can be used.
- A corresponding cache changed event will be dispatched.
+    Delete entry from cache by key. Here, no alternate key can be used. A corresponding cache changed event will be dispatched.
 </div>
 
 
@@ -433,7 +428,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line519">line 519</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line527">line 527</a>
     </li></ul></dd>
     
 
@@ -811,8 +806,7 @@
 
 
 <div class="description">
-    Iterate over the cache from oldest to newest entry.
- The given callback gets a cache entry as argument (an object with 'key', 'value' and 'alternateKeys').
+    Iterate over the cache from oldest to newest entry. The given callback gets a cache entry as argument (an object with 'key', 'value' and 'alternateKeys').
 </div>
 
 
@@ -856,7 +850,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line544">line 544</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line552">line 552</a>
     </li></ul></dd>
     
 
@@ -890,7 +884,7 @@
     
 
     
-    <h4 class="name" id=".self.get"><span class="type-signature">(static) </span>self.get<span class="signature">(keyOrAlternateKey, notFromCache)</span><span class="type-signature"> &rarr; {value|Promise|undefined}</span></h4>
+    <h4 class="name" id=".self.get"><span class="type-signature">(static) </span>self.get<span class="signature">(keyOrAlternateKey, notFromCache, customEntryGetter)</span><span class="type-signature"> &rarr; {value|Promise|undefined}</span></h4>
     
 
     
@@ -898,16 +892,7 @@
 
 
 <div class="description">
-    Get value from cache by either its key or one of its alternate keys (if exists).
- If the value is not found in the cache and an entry-getter was set via setEntryGetter, then:
-    - If the entry getter returns a Promise, a Promise resolving to the value will be returned.
-      When the Promise resolves, the entry will be set to the cache. Until the Promise is not resolved,
-      subsequent calls to get will return the same Promise.
-    - If the entry getter returns a cache entry (keyValueAlternateKeys-object), this will be set to the cache
-      and the value will be returned.
-    - If the entry getter returns null or undefined, undefined will be returned.
- If the key is not in the cache and no entry getter is set, undefined will be returned.
- Makes the corresponding entry the most recently used (use 'getWithoutLruChange' to avoid this).
+    Get value from cache by either its key or one of its alternate keys (if exists). If the value is not found in the cache and an entry-getter was set via setEntryGetter, then:    - If the entry getter returns a Promise, a Promise resolving to the value will be returned.      When the Promise resolves, the entry will be set to the cache. Until the Promise is not resolved,      subsequent calls to get will return the same Promise.    - If the entry getter returns a cache entry (keyValueAlternateKeys-object), this will be set to the cache      and the value will be returned.    - If the entry getter returns null or undefined, undefined will be returned. If the key is not in the cache and no entry getter is set, undefined will be returned. Makes the corresponding entry the most recently used (use 'getWithoutLruChange' to avoid this).
 </div>
 
 
@@ -982,9 +967,30 @@
 
             
 
-            <td class="description last">If true and an entry getter is set, then the value will not be taken from the
-                                cache, but from the entry getter. If no entry getter is set, an error will be
-                                thrown. (default: false)</td>
+            <td class="description last">If true and an entry getter is set, then the value will not be taken from the                                cache, but from the entry getter. If no entry getter is set, an error will be                                thrown. (default: false)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>customEntryGetter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">function that takes a key as argument and returns corresponding entry or                                      promised entry. Has precedence over entry gettter set via setEntryGetter.</td>
         </tr>
 
     
@@ -1025,7 +1031,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line481">line 481</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line487">line 487</a>
     </li></ul></dd>
     
 
@@ -1139,7 +1145,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line551">line 551</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line559">line 559</a>
     </li></ul></dd>
     
 
@@ -1247,7 +1253,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line590">line 590</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line598">line 598</a>
     </li></ul></dd>
     
 
@@ -1355,7 +1361,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line576">line 576</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line584">line 584</a>
     </li></ul></dd>
     
 
@@ -1463,7 +1469,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line583">line 583</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line591">line 591</a>
     </li></ul></dd>
     
 
@@ -1519,7 +1525,7 @@
     
 
     
-    <h4 class="name" id=".self.getWithoutLruChange"><span class="type-signature">(static) </span>self.getWithoutLruChange<span class="signature">(keyOrAlternateKey, notFromCache)</span><span class="type-signature"> &rarr; {value|Promise|undefined}</span></h4>
+    <h4 class="name" id=".self.getWithoutLruChange"><span class="type-signature">(static) </span>self.getWithoutLruChange<span class="signature">(keyOrAlternateKey, notFromCache, customEntryGetter)</span><span class="type-signature"> &rarr; {value|Promise|undefined}</span></h4>
     
 
     
@@ -1527,9 +1533,7 @@
 
 
 <div class="description">
-    Like 'get', but not making the corresponding entry the most recently used.
- If the value is retrieved via entry getter, it will of course still become the
- most recently used.
+    Like 'get', but not making the corresponding entry the most recently used. If the value is retrieved via entry getter, it will of course still become the most recently used.
 </div>
 
 
@@ -1604,9 +1608,30 @@
 
             
 
-            <td class="description last">If true and an entry getter is set, then the value will not be taken from the
-                                cache, but from the entry getter. If no entry getter is set, an error will be
-                                thrown. (default: false)</td>
+            <td class="description last">If true and an entry getter is set, then the value will not be taken from the                                cache, but from the entry getter. If no entry getter is set, an error will be                                thrown. (default: false)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>customEntryGetter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">function that takes a key as argument and returns corresponding entry or                                      promised entry. Has precedence over entry gettter set via setEntryGetter.</td>
         </tr>
 
     
@@ -1647,7 +1672,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line494">line 494</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line502">line 502</a>
     </li></ul></dd>
     
 
@@ -1810,7 +1835,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line502">line 502</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line510">line 510</a>
     </li></ul></dd>
     
 
@@ -1874,10 +1899,7 @@
 
 
 <div class="description">
-    Insert or update a cache entry.
- If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
- A corresponding cache changed event will be dispatched.
- If an insert leads to cache max size being exceeded and dispatchLruRemoves is set to true, the cache change event will contain both, insert and remove.
+    Insert or update a cache entry. If alternate keys are provided and an already existing entry already has alternate keys, these will be extended. A corresponding cache changed event will be dispatched. If an insert leads to cache max size being exceeded and dispatchLruRemoves is set to true, the cache change event will contain both, insert and remove.
 </div>
 
 
@@ -2034,11 +2056,7 @@
 
 
 <div class="description">
-    Insert or update multiple cache entries.
- If alternate keys are provided and an already existing entry already has alternate keys, these will be extended.
- A corresponding cache changed event will be dispatched.
- If inserts lead to cache max size being exceeded and dispatchLruRemoves is set to true, the cache change event will contain both, inserts and removes.
- It is even possible that an entry from the inserts is also contained in the removes.
+    Insert or update multiple cache entries. If alternate keys are provided and an already existing entry already has alternate keys, these will be extended. A corresponding cache changed event will be dispatched. If inserts lead to cache max size being exceeded and dispatchLruRemoves is set to true, the cache change event will contain both, inserts and removes. It is even possible that an entry from the inserts is also contained in the removes.
 </div>
 
 
@@ -2501,9 +2519,7 @@
 
 
 <div class="description">
-    Set a getter that can be used to retrieve a cache entry (keyValueAlternateKeys-object) by key in
- case it is not yet in the cache.
- For values that might be called by alternate key, the getter should also be able to handle this.
+    Set a getter that can be used to retrieve a cache entry (keyValueAlternateKeys-object) by key in case it is not yet in the cache. For values that might be called by alternate key, the getter should also be able to handle this.
 </div>
 
 
@@ -2596,7 +2612,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line459">line 459</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line463">line 463</a>
     </li></ul></dd>
     
 
@@ -2660,8 +2676,7 @@
 
 
 <div class="description">
-    Set a new max size for this cache.
- If this leads to the removal of cache entries and dispatchLruRemoves is set true, a corresponding cache changed event will be dispatched.
+    Set a new max size for this cache. If this leads to the removal of cache entries and dispatchLruRemoves is set true, a corresponding cache changed event will be dispatched.
 </div>
 
 
@@ -2754,7 +2769,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line599">line 599</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line607">line 607</a>
     </li></ul></dd>
     
 
@@ -2826,7 +2841,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 14 2018 23:16:45 GMT+0100 (Central European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Dec 18 2018 12:16:12 GMT+0100 (GMT+01:00)
 </footer>
 
 <script> prettyPrint(); </script>

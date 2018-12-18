@@ -125,7 +125,7 @@ const handleTransactionChangeObject = changeObject => {
     try {
       handler.changedHandler(changeObject);
     }
-    catch(error) {
+    catch (error) {
       errors.push(error);
     }
     finally {
@@ -400,7 +400,7 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
 
   let entryGetter = null;
   const keyToPromise = new Map();
-  const internalGetter = (key, getter, useEntryGetter = false, notFromCache = false) => {
+  const internalGetter = (key, getter, useEntryGetter = false, notFromCache = false, customEntryGetter = null) => {
     let entry; // eslint-disable-line init-declarations
     if (!notFromCache) {
       entry = getter(key);
@@ -408,12 +408,16 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
         entry = getter(alternateKeyToKey.get(key));
       }
     }
+    let usedEntryGetter = entryGetter;
+    if (customEntryGetter !== null) {
+      usedEntryGetter = customEntryGetter;
+    }
     if (typeof entry === "undefined") {
-      if (useEntryGetter && entryGetter !== null) {
+      if (useEntryGetter && usedEntryGetter !== null) {
         if (keyToPromise.has(key)) {
           return keyToPromise.get(key);
         }
-        const keyValueAlternateKeys = entryGetter(key);
+        const keyValueAlternateKeys = usedEntryGetter(key);
         if (!keyValueAlternateKeys) {
           return entry;
         }
@@ -476,9 +480,11 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @param {boolean} notFromCache - If true and an entry getter is set, then the value will not be taken from the
    *                                 cache, but from the entry getter. If no entry getter is set, an error will be
    *                                 thrown. (default: false)
+   * @param {function} customEntryGetter - function that takes a key as argument and returns corresponding entry or
+   *                                       promised entry. Has precedence over entry gettter set via setEntryGetter.
    * @returns {value | Promise | undefined} value, promised value or undefined
    */
-  self.get = (keyOrAlternateKey, notFromCache = false) => internalGetter(keyOrAlternateKey, lruMap.get, true, notFromCache);
+  self.get = (keyOrAlternateKey, notFromCache = false, customEntryGetter = null) => internalGetter(keyOrAlternateKey, lruMap.get, true, notFromCache, customEntryGetter);
 
   /** Like 'get', but not making the corresponding entry the most recently used.
    *  If the value is retrieved via entry getter, it will of course still become the
@@ -489,9 +495,11 @@ function LruCache(valueType, maxSize = DEFAULT_MAX_SIZE) {
    * @param {boolean} notFromCache - If true and an entry getter is set, then the value will not be taken from the
    *                                 cache, but from the entry getter. If no entry getter is set, an error will be
    *                                 thrown. (default: false)
+   * @param {function} customEntryGetter - function that takes a key as argument and returns corresponding entry or
+   *                                       promised entry. Has precedence over entry gettter set via setEntryGetter.
    * @returns {value | Promise | undefined} value, promised value or undefined
    */
-  self.getWithoutLruChange = (keyOrAlternateKey, notFromCache = false) => internalGetter(keyOrAlternateKey, lruMap.getWithoutLruChange, true, notFromCache);
+  self.getWithoutLruChange = (keyOrAlternateKey, notFromCache = false, customEntryGetter = null) => internalGetter(keyOrAlternateKey, lruMap.getWithoutLruChange, true, notFromCache, customEntryGetter);
 
   /** Return whether the cache contains an entry for the given key or alternate key
    * @memberof LruCache

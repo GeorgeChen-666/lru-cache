@@ -117,9 +117,7 @@
 
 
 <div class="description">
-    Pass a callback or a promise. All cache changes happening inside the callback or promise will be batched into a single
- change object that will be dispatched to handlers after the callback/promise has finished. If this is called while there
- is already another transaction in progress, the two transactions will just be batched together.
+    Pass a callback or a promise. All cache changes happening inside the callback or promise will be batched into a single change object that will be dispatched to handlers after the callback/promise has finished. If this is called while there is already another transaction in progress, the two transactions will just be batched together.
 </div>
 
 
@@ -279,8 +277,7 @@
 
 
 <div class="description">
-    Clear (invalidate) all existing caches.
-Will dispatch a single change event with all changes batched together.
+    Clear (invalidate) all existing caches.Will dispatch a single change event with all changes batched together.
 </div>
 
 
@@ -324,7 +321,7 @@ Will dispatch a single change event with all changes batched together.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line645">line 645</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line653">line 653</a>
     </li></ul></dd>
     
 
@@ -384,8 +381,7 @@ Will dispatch a single change event with all changes batched together.
 
 
 <div class="description">
-    Get a LruCache for the given valueType.
-If a cache for this type already exists, the existing cache instance will be returned (LruCache is a singleton per value type).
+    Get a LruCache for the given valueType.If a cache for this type already exists, the existing cache instance will be returned (LruCache is a singleton per value type).
 </div>
 
 
@@ -478,7 +474,7 @@ If a cache for this type already exists, the existing cache instance will be ret
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line629">line 629</a>
+        <a href="LruCache.js.html">LruCache.js</a>, <a href="LruCache.js.html#line637">line 637</a>
     </li></ul></dd>
     
 
@@ -549,10 +545,7 @@ If a cache for this type already exists, the existing cache instance will be ret
 
 
 <div class="description">
-    Register a handler that is called when value(s) get updated/inserted/removed in/to/from a cache.
-If the cache has already exceeded its maxSize, there is no way to know if a cache.set (or setAll) is an insert or
-an update (because JS does not yet provide weak references), so an insert event can be insert or update.
-The returned handle can be used to unregister the handler, or to deactivate/activate it (initial state is active).
+    Register a handler that is called when value(s) get updated/inserted/removed in/to/from a cache.If the cache has already exceeded its maxSize, there is no way to know if a cache.set (or setAll) is an insert oran update (because JS does not yet provide weak references), so an insert event can be insert or update.The returned handle can be used to unregister the handler, or to deactivate/activate it (initial state is active).
 </div>
 
 
@@ -604,19 +597,7 @@ The returned handle can be used to unregister the handler, or to deactivate/acti
 
             
 
-            <td class="description last">A function that will be called with an object parameter of the following shape:
-                  {
-                    valueTypes: Set(),
-                    <valueType>: {
-                      inserts: [{key, value, alternateKeys, order}],
-                      clearRemoves: [{key, value, alternateKeys, order}],
-                      lruRemoves: [{key, value, alternateKeys, order}],
-                      deleteRemoves: [{key}],
-                    },
-                    ...
-                  }
-                  The order can be used to determine e.g. if an entry was first inserted and then deleted, or first
-                  deleted and then re-inserted (can happen in cache transactions).</td>
+            <td class="description last">A function that will be called with an object parameter of the following shape:                  {                    valueTypes: Set(),                    <valueType>: {                      inserts: [{key, value, alternateKeys, order}],                      clearRemoves: [{key, value, alternateKeys, order}],                      lruRemoves: [{key, value, alternateKeys, order}],                      deleteRemoves: [{key}],                    },                    ...                  }                  The order can be used to determine e.g. if an entry was first inserted and then deleted, or first                  deleted and then re-inserted (can happen in cache transactions).</td>
         </tr>
 
     
@@ -642,10 +623,7 @@ The returned handle can be used to unregister the handler, or to deactivate/acti
 
             
 
-            <td class="description last">An array or a single string specifying the cache value types the handler should be called for (default: null)
-                If null, it will be called for all object types
-                If not null and a bulk (transactional) change has multiple valueTypes of which only some are of
-                interest for the handler, then also the other types will be part of the argument (if at least one other active listener for the other types exist)</td>
+            <td class="description last">An array or a single string specifying the cache value types the handler should be called for (default: null)                If null, it will be called for all object types                If not null and a bulk (transactional) change has multiple valueTypes of which only some are of                interest for the handler, then also the other types will be part of the argument (if at least one other active listener for the other types exist)</td>
         </tr>
 
     
@@ -758,7 +736,7 @@ The returned handle can be used to unregister the handler, or to deactivate/acti
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 14 2018 23:16:45 GMT+0100 (Central European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Dec 18 2018 12:16:12 GMT+0100 (GMT+01:00)
 </footer>
 
 <script> prettyPrint(); </script>
