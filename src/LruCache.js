@@ -167,13 +167,10 @@ export const cacheTransaction = callbackOrPromise => {
     callbackOrPromise.finally(() => {
       runningTransactions -= 1;
       if (runningTransactions === 0) {
-        try {
-          handleTransactionChangeObject(transactionChangeObject);
-        }
-        finally {
-          transactionChangeObject = null;
-          changeOrder = 0;
-        }
+        const changeObject = transactionChangeObject;
+        transactionChangeObject = null;
+        changeOrder = 0;
+        handleTransactionChangeObject(changeObject);
       }
     });
   }
@@ -184,13 +181,10 @@ export const cacheTransaction = callbackOrPromise => {
     finally {
       runningTransactions -= 1;
       if (runningTransactions === 0) {
-        try {
-          handleTransactionChangeObject(transactionChangeObject);
-        }
-        finally {
-          transactionChangeObject = null;
-          changeOrder = 0;
-        }
+        const changeObject = transactionChangeObject;
+        transactionChangeObject = null;
+        changeOrder = 0;
+        handleTransactionChangeObject(changeObject);
       }
     }
   }
